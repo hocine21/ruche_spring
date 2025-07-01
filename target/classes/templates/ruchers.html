@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Ruchers - Ruche</title>
+    <link rel="stylesheet" href="ruchers.css">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="admin-container">
+        <div id="menu-container"></div>
+
+        <main class="main-content">
+            <div class="section-header">
+                <h2>Gestion des Ruchers</h2>
+                <button class="add-apiary-btn" id="addApiaryBtn">
+                    <i class="fas fa-plus"></i> Ajouter un Rucher
+                </button>
+            </div>
+
+            <div class="content-wrapper">
+                <!-- Liste des ruchers -->
+                <div class="apiaries-list">
+                    <div class="search-container">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchApiary" placeholder="Rechercher un rucher...">
+                        </div>
+                    </div>
+                    <div class="apiaries-container" id="apiariesList">
+                        <!-- Les ruchers seront ajoutés dynamiquement ici -->
+                    </div>
+                </div>
+
+                <!-- Carte -->
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal d'ajout/modification de rucher -->
+    <div class="modal" id="apiaryModal">
+        <div class="modal-content">
+            <button class="close-modal-btn">&times;</button>
+            <h2>Gestion du Rucher</h2>
+            <form id="apiaryForm">
+                <div class="form-group">
+                    <label>Nom du Rucher</label>
+                    <input type="text" id="apiaryName" required placeholder="Ex: Rucher Principal">
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <div class="address-autocomplete">
+                        <input type="text" id="apiaryAddress" required placeholder="Commencez à taper une adresse...">
+                        <div id="addressSuggestions" class="suggestions-container"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="apiaryDescription" placeholder="Description du rucher..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Coordonnées GPS</label>
+                    <div class="coordinates">
+                        <input type="text" id="latitude" readonly placeholder="Latitude">
+                        <input type="text" id="longitude" readonly placeholder="Longitude">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Nominatim pour la géocodification -->
+    <script src="https://nominatim.openstreetmap.org/ui/autocomplete.js"></script>
+    <script src="menu.js"></script>
+    <script src="ruchers.js"></script>
+</body>
+</html> 

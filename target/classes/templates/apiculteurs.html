@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Apiculteurs</title>
+    <link rel="stylesheet" href="apiculteurs.css">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar (copié de admin.html) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="images/ChatGPT Image 11 mai 2025, 22_42_25.png" alt="Logo RucheConnect" class="logo">
+                <h2>RucheConnect</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/admin">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span>Tableau de bord</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#ruchers" id="menu-ruchers">
+                            <i class="fa-solid fa-house-chimney"></i>
+                            <span>Gestion Ruchers</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#ruches" id="menu-ruches">
+                            <i class="fa-solid fa-bee"></i>
+                            <span>Gestion Ruches</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#mesures" id="menu-mesures">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Mesures & Historique</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#alertes" id="menu-alertes">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Alertes Vol</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="/apiculteurs" id="menu-apiculteurs">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Gestion Apiculteurs</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="home.html" class="logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>Gestion des Apiculteurs</h1>
+            </header>
+            <section style="background:#fff; border-radius:12px; padding:24px; margin:24px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f8f8f8;">
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="apiculteur : ${apiculteurs}">
+                            <td th:text="${apiculteur.nom}"></td>
+                            <td th:text="${apiculteur.prenom}"></td>
+                            <td th:text="${apiculteur.email}"></td>
+                            <td th:text="${apiculteur.role}"></td>
+                            <td>
+                                <form th:action="@{/apiculteurs/delete}" method="post" style="display:inline;">
+                                    <input type="hidden" name="id" th:value="${apiculteur.id}">
+                                    <button type="submit">Supprimer</button>
+                                </form>
+                                <!-- Pour la modification, tu peux ouvrir un modal ou pré-remplir un formulaire -->
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- MODALE AJOUT/MODIF APICULTEUR -->
+            <div id="beekeeperModal" class="modal">
+                <div class="modal-content">
+                    <button class="close-modal-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <h3>Ajouter un apiculteur</h3>
+                    <form th:action="@{/apiculteurs/create}" method="post" style="margin-bottom:24px;">
+                        <input type="email" name="email" placeholder="Email" required>
+                        <input type="password" name="password" placeholder="Mot de passe" required>
+                        <input type="text" name="nom" placeholder="Nom" required>
+                        <input type="text" name="prenom" placeholder="Prénom" required>
+                        <select name="role" required>
+                            <option value="Admin">Admin</option>
+                            <option value="Apiculteur">Apiculteur</option>
+                        </select>
+                        <button type="submit">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="menu.js"></script>
+    <script src="apiculteurs.js"></script>
+</body>
+</html> 

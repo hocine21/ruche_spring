@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Apiculteur - RucheConnect</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/images/ChatGPT Image 11 mai 2025, 22_42_25.png" alt="Logo RucheConnect" class="logo">
+                <h2>RucheConnect</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#dashboard">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span>Tableau de bord</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/ruchers}" id="menu-ruchers">
+                            <i class="fa-solid fa-house-chimney"></i>
+                            <span>Gestion Ruchers</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/ruches}" id="menu-ruches">
+                            <i class="fa-solid fa-bee"></i>
+                            <span>Gestion Ruches</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#mesures" id="menu-mesures">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Mesures & Historique</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#alertes" id="menu-alertes">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Alertes Vol</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#apiculteurs" id="menu-apiculteurs">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Gestion Apiculteurs</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a th:href="@{/logout}" class="logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Rechercher...">
+                </div>
+                <div class="user-menu">
+                    <div class="notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="user-info">
+                        <img src="https://ui-avatars.com/api/?name=John+Doe" alt="User Avatar">
+                        <span th:text="${email}">John Doe</span>
+                        <span class="user-role" th:text="${role}" style="margin-left:10px; color:#bfa900; font-size:0.95em;"></span>
+                    </div>
+                </div>
+            </header>
+          
+            <!-- SECTION GESTION GLOBALE DES RUCHES -->
+            <div class="dashboard-content" id="hives-management-section" style="display:none;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+                    <h2 style="font-size:2em; color:#bfa900; font-weight:700; margin:0; letter-spacing:1px;">Gestion des ruches</h2>
+                    <button class="add-global-hive-btn" id="openGlobalHiveModal" style="background:linear-gradient(90deg,#ffd700 0%,#ff9800 100%); color:#fff; border:none; border-radius:24px; padding:12px 28px; font-size:1.1em; font-weight:600; box-shadow:0 2px 10px #ffd70033; cursor:pointer; transition:background 0.2s;">
+                        <i class="fa-solid fa-plus"></i> Ajouter une ruche
+                    </button>
+                </div>
+
+                <!-- Filtres et recherche -->
+                <div style="background:#fff; border-radius:12px; padding:20px; margin-bottom:24px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:250px;">
+                            <label for="apiaryFilter" style="font-weight:600; color:#555; display:block; margin-bottom:8px;">Filtrer par rucher</label>
+                            <select id="apiaryFilter" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                                <option value="all">Tous les ruchers</option>
+                                <!-- Les options seront ajoutées dynamiquement -->
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:250px;">
+                            <label for="statusFilter" style="font-weight:600; color:#555; display:block; margin-bottom:8px;">Filtrer par statut</label>
+                            <select id="statusFilter" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                                <option value="all">Tous les statuts</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:250px;">
+                            <label for="hiveSearch" style="font-weight:600; color:#555; display:block; margin-bottom:8px;">Rechercher</label>
+                            <div style="position:relative;">
+                                <input type="text" id="hiveSearch" placeholder="Rechercher une ruche..." style="width:100%; padding:10px; padding-left:38px; border-radius:8px; border:1px solid #ddd;">
+                                <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#aaa;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau des ruches -->
+                <div style="background:#fff; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                    <table id="hivesTable" style="width:100%; border-collapse:collapse; text-align:left;">
+                        <thead>
+                            <tr style="background:#f8f8f8; color:#555;">
+                                <th style="padding:16px; font-weight:600;">Nom</th>
+                                <th style="padding:16px; font-weight:600;">Rucher</th>
+                                <th style="padding:16px; font-weight:600;">Type</th>
+                                <th style="padding:16px; font-weight:600;">Statut</th>
+                                <th style="padding:16px; font-weight:600;">Date d'ajout</th>
+                                <th style="padding:16px; font-weight:600; text-align:center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hivesTableBody">
+                            <!-- Le contenu sera généré dynamiquement -->
+                            <tr style="border-top:1px solid #eee;">
+                                <td colspan="6" style="padding:20px; text-align:center; color:#888;">
+                                    Chargement des ruches...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- MODALE AJOUT/MODIF RUCHE GLOBALE -->
+            <div id="globalHiveModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:10000; align-items:center; justify-content:center;">
+                <div class="modal-content" style="background:#fff; border-radius:18px; box-shadow:0 8px 32px #ffd70033; padding:32px 28px; min-width:320px; max-width:95vw; position:relative; width:500px;">
+                    <button id="closeGlobalHiveModal" style="position:absolute; top:18px; right:18px; background:none; border:none; font-size:1.5em; color:#bfa900; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="globalHiveModalTitle" style="color:#bfa900; font-weight:700; margin-bottom:18px;">Ajouter une ruche</h3>
+                    <form id="globalHiveForm">
+                        <div style="margin-bottom:16px;">
+                            <label for="globalHiveApiary" style="font-weight:600; color:#bfa900;">Rucher</label>
+                            <select id="globalHiveApiary" style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;" required>
+                                <option value="">Sélectionnez un rucher</option>
+                                <!-- Options ajoutées dynamiquement -->
+                            </select>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label for="globalHiveName" style="font-weight:600; color:#bfa900;">Nom de la ruche</label>
+                            <input type="text" id="globalHiveName" placeholder="Ex: Ruche #1" required style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label for="globalHiveType" style="font-weight:600; color:#bfa900;">Type de ruche</label>
+                            <select id="globalHiveType" style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;">
+                                <option value="Dadant">Dadant</option>
+                                <option value="Langstroth">Langstroth</option>
+                                <option value="Warré">Warré</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label for="globalHiveNotes" style="font-weight:600; color:#bfa900;">Notes</label>
+                            <textarea id="globalHiveNotes" placeholder="Notes sur cette ruche..." style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px; min-height:80px;"></textarea>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="font-weight:600; color:#bfa900;">État de la ruche</label>
+                            <div style="display:flex; gap:10px; margin-top:8px;">
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                    <input type="radio" name="globalHiveStatus" value="active" checked>
+                                    <span style="padding:6px 12px; background:#e8f5e9; color:#2e7d32; border-radius:12px; font-size:0.9em;">Active</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                    <input type="radio" name="globalHiveStatus" value="inactive">
+                                    <span style="padding:6px 12px; background:#fff8e1; color:#f57f17; border-radius:12px; font-size:0.9em;">Inactive</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                    <input type="radio" name="globalHiveStatus" value="maintenance">
+                                    <span style="padding:6px 12px; background:#e3f2fd; color:#1565c0; border-radius:12px; font-size:0.9em;">Maintenance</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div style="margin-top:24px; text-align:right;">
+                            <button type="submit" style="background:linear-gradient(90deg,#ffd700 0%,#ff9800 100%); color:#fff; border:none; border-radius:14px; padding:12px 32px; font-size:1.1em; font-weight:600; box-shadow:0 2px 10px #ffd70033; cursor:pointer; transition:background 0.2s;">
+                                <i class="fa-solid fa-save"></i> Enregistrer la ruche
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="dashboard-content" id="ruchers-section" style="display:none;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+                    <h2 style="font-size:2em; color:#bfa900; font-weight:700; margin:0; letter-spacing:1px;">Mes ruchers</h2>
+                    <button class="add-apiary-btn" id="openApiaryModal" style="background:linear-gradient(90deg,#ffd700 0%,#ff9800 100%); color:#fff; border:none; border-radius:24px; padding:12px 28px; font-size:1.1em; font-weight:600; box-shadow:0 2px 10px #ffd70033; cursor:pointer; transition:background 0.2s;">
+                        <i class="fa-solid fa-plus"></i> Ajouter un rucher
+                    </button>
+                </div>
+                <div class="apiaries-list" id="apiaries-list" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:24px;">
+                    <!-- Les cards des ruchers s'affichent ici -->
+                </div>
+            </div>
+
+            <!-- MODALE AJOUT/MODIF RUCHER -->
+            <div id="apiaryModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:10000; align-items:center; justify-content:center;">
+                <div class="modal-content" style="background:#fff; border-radius:18px; box-shadow:0 8px 32px #ffd70033; padding:32px 28px; min-width:320px; max-width:95vw; position:relative; width:700px;">
+                    <button id="closeApiaryModal" style="position:absolute; top:18px; right:18px; background:none; border:none; font-size:1.5em; color:#bfa900; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="modalTitle" style="color:#bfa900; font-weight:700; margin-bottom:18px;">Ajouter un rucher</h3>
+                    <form id="apiaryForm">
+                        <div style="display:flex; gap:20px;">
+                            <div style="flex:1;">
+                                <div style="margin-bottom:16px;">
+                                    <label for="apiaryAddress" style="font-weight:600; color:#bfa900;">Adresse du rucher</label>
+                                    <input type="text" id="apiaryAddress" placeholder="Commencez à saisir une adresse..." required style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;" autocomplete="off">
+                                    <small style="display:block; margin-top:5px; color:#888;">Entrez les premiers caractères pour voir apparaître des suggestions d'adresses</small>
+                                </div>
+                                <div style="margin-bottom:16px;">
+                                    <label for="apiaryDesc" style="font-weight:600; color:#bfa900;">Description du rucher</label>
+                                    <textarea id="apiaryDesc" placeholder="Description du rucher..." required style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px; min-height:120px;"></textarea>
+                                </div>
+                            </div>
+                            <div style="flex:1;">
+                                <div style="margin-bottom:16px;">
+                                    <label style="font-weight:600; color:#bfa900;">Prévisualisation de la localisation</label>
+                                    <div id="previewMap" style="width:100%; height:260px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;"></div>
+                                    <div style="display:flex; align-items:center; margin-top:8px; font-size:0.85em; color:#888;">
+                                        <i class="fa-solid fa-circle-info" style="margin-right:5px;"></i>
+                                        <span>L'emplacement sera automatiquement détecté à partir de l'adresse</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                            <div>
+                                <span id="coordinatesDisplay" style="font-size:0.85em; color:#888;"></span>
+                            </div>
+                            <button type="submit" style="background:linear-gradient(90deg,#ffd700 0%,#ff9800 100%); color:#fff; border:none; border-radius:14px; padding:12px 32px; font-size:1.1em; font-weight:600; box-shadow:0 2px 10px #ffd70033; cursor:pointer; transition:background 0.2s;">
+                                <i class="fa-solid fa-save"></i> Enregistrer le rucher
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- GESTION DES RUCHES D'UN RUCHER -->
+            <div class="dashboard-content" id="hives-section" style="display:none;">
+                <div class="hives-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+                    <div>
+                        <a href="#" id="backToApiaries" style="display:inline-flex; align-items:center; gap:8px; color:#bfa900; margin-bottom:10px; text-decoration:none; font-weight:500;">
+                            <i class="fa-solid fa-arrow-left"></i> Retour aux ruchers
+                        </a>
+                        <h2 style="font-size:2em; color:#bfa900; font-weight:700; margin:0; letter-spacing:1px;">
+                            <span id="currentApiaryName">Rucher</span>
+                        </h2>
+                        <p id="currentApiaryAddress" style="color:#777; margin-top:5px;"></p>
+                    </div>
+                    <button class="add-hive-btn" id="openHiveModal" style="background:linear-gradient(90deg,#ffd700 0%,#ff9800 100%); color:#fff; border:none; border-radius:24px; padding:12px 28px; font-size:1.1em; font-weight:600; box-shadow:0 2px 10px #ffd70033; cursor:pointer; transition:background 0.2s;">
+                        <i class="fa-solid fa-plus"></i> Ajouter une ruche
+                    </button>
+                </div>
+                <div class="hives-list" id="hives-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
+                    <!-- Les cards des ruches s'affichent ici -->
+                </div>
+            </div>
+            
+            <!-- MODALE AJOUT/MODIF RUCHE -->
+            <div id="hiveModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:10000; align-items:center; justify-content:center;">
+                <div class="modal-content" style="background:#fff; border-radius:18px; box-shadow:0 8px 32px #ffd70033; padding:32px 28px; min-width:320px; max-width:95vw; position:relative; width:500px;">
+                    <button id="closeHiveModal" style="position:absolute; top:18px; right:18px; background:none; border:none; font-size:1.5em; color:#bfa900; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="hiveModalTitle" style="color:#bfa900; font-weight:700; margin-bottom:18px;">Ajouter une ruche</h3>
+                    <form id="hiveForm">
+                        <div style="margin-bottom:16px;">
+                            <label for="hiveName" style="font-weight:600; color:#bfa900;">Nom de la ruche</label>
+                            <input type="text" id="hiveName" placeholder="Ex: Ruche #1" required style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label for="hiveType" style="font-weight:600; color:#bfa900;">Type de ruche</label>
+                            <select id="hiveType" style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;">
+                                <option value="Dadant">Dadant</option>
+                                <option value="Langstroth">Langstroth</option>
+                                <option value="Warré">Warré</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label for="hiveNotes" style="font-weight:600; color:#bfa900;">Notes</label>
+                            <textarea id="hiveNotes" placeholder="Notes sur cette ruche..." style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px; min-height:80px;"></textarea>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="font-weight:600; color:#bfa900;">État de la ruche</label>
+                            <div style="display:flex; gap:10px; margin-top:8px;">
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                    <input type="radio" name="hiveStatus" value="active" checked>
+                                    <span style="padding:6px 12px; background:#e8f5e9; color:#2e7d32; border-radius:12px; font-size:0.9em;">Active</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                    <input type="radio" name="hiveStatus" value="inactive">
+                                    <span style="padding:6px 12px; background:#fff8e1; color:#f57f17; border-radius:12px; font-size:0.9em;">Inactive</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                    <input type="radio" name="hiveStatus" value="maintenance">
+                                    <span style="padding:6px 12px; background:#e3f2fd; color:#1565c0; border-radius:12px; font-size:0.9em;">Maintenance</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div style="margin-top:24px; text-align:right;">
+                            <button type="submit" style="background:linear-gradient(90deg,#ffd700 0%,#ff9800 100%); color:#fff; border:none; border-radius:14px; padding:12px 32px; font-size:1.1em; font-weight:600; box-shadow:0 2px 10px #ffd70033; cursor:pointer; transition:background 0.2s;">
+                                <i class="fa-solid fa-save"></i> Enregistrer la ruche
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="dashboard-content" id="dashboard-section">
+                <!-- Overview Cards -->
+                <div class="overview-cards">
+                    <div class="card">
+                        <div class="card-icon temperature">
+                            <i class="fa-solid fa-temperature-three-quarters"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Température moyenne</h3>
+                            <p class="value">24.5°C</p>
+                            <p class="trend positive">+2.3°C</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon humidity">
+                            <i class="fa-solid fa-droplet"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Humidité</h3>
+                            <p class="value">65%</p>
+                            <p class="trend negative">-5%</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon activity">
+                            <i class="fa-solid fa-bee"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Activité</h3>
+                            <p class="value">Normal</p>
+                            <p class="trend neutral">Stable</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon alerts">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3>Alertes</h3>
+                            <p class="value">3</p>
+                            <p class="trend negative">Nouvelles</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-section">
+                    <div class="chart-container">
+                        <h3>Température et Humidité</h3>
+                        <canvas id="tempHumidityChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Activité des ruches</h3>
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Map and Alerts Section -->
+                <div class="map-alerts-section">
+                    <div class="map-container">
+                        <h3>Localisation des ruches</h3>
+                        <div id="map"></div>
+                    </div>
+                    <div class="alerts-container">
+                        <h3>Alertes récentes</h3>
+                        <div class="alerts-list">
+                            <div class="alert-item warning">
+                                <i class="fa-solid fa-temperature-high"></i>
+                                <div class="alert-content">
+                                    <h4>Température élevée</h4>
+                                    <p>Ruche #3 - Il y a 5 minutes</p>
+                                </div>
+                            </div>
+                            <div class="alert-item info">
+                                <i class="fa-solid fa-bee"></i>
+                                <div class="alert-content">
+                                    <h4>Mouvement détecté</h4>
+                                    <p>Ruche #1 - Il y a 15 minutes</p>
+                                </div>
+                            </div>
+                            <div class="alert-item warning">
+                                <i class="fa-solid fa-droplet-slash"></i>
+                                <div class="alert-content">
+                                    <h4>Humidité basse</h4>
+                                    <p>Ruche #2 - Il y a 30 minutes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Mesures -->
+            <div class="dashboard-content" id="mesures-section" style="display:none;">
+                <div class="section-header">
+                    <h2>Mesures et Historique</h2>
+                    <div class="controls">
+                        <select id="ruche-select" class="custom-select">
+                            <option value="">Sélectionner une ruche</option>
+                            <option value="1">Ruche #1</option>
+                            <option value="2">Ruche #2</option>
+                        </select>
+                        <select id="periode-select" class="custom-select">
+                            <option value="jour">Dernières 24h</option>
+                            <option value="semaine">Dernière semaine</option>
+                        </select>
+                        <button class="view-type-btn active" data-view="graph">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </button>
+                        <button class="view-type-btn" data-view="list">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Affichage des mesures -->
+                <div class="measures-display">
+                    <!-- Valeurs instantanées -->
+                    <div class="current-measures">
+                        <div class="measure-card">
+                            <i class="fa-solid fa-temperature-three-quarters"></i>
+                            <div class="measure-info">
+                                <span class="measure-value">24.5°C</span>
+                                <span class="measure-label">Température</span>
+                            </div>
+                        </div>
+                        <div class="measure-card">
+                            <i class="fa-solid fa-droplet"></i>
+                            <div class="measure-info">
+                                <span class="measure-value">65%</span>
+                                <span class="measure-label">Humidité</span>
+                            </div>
+                        </div>
+                        <div class="measure-card">
+                            <i class="fa-solid fa-lock"></i>
+                            <div class="measure-info">
+                                <span class="measure-value">Fermé</span>
+                                <span class="measure-label">État couvercle</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Graphique -->
+                    <div class="measures-graph">
+                        <canvas id="measuresChart"></canvas>
+                    </div>
+
+                    <!-- Liste (initialement cachée) -->
+                    <div class="measures-list" style="display:none;">
+                        <table class="measures-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Température</th>
+                                    <th>Humidité</th>
+                                    <th>État couvercle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2024-02-20 14:30</td>
+                                    <td>24.5°C</td>
+                                    <td>65%</td>
+                                    <td>Fermé</td>
+                                </tr>
+                                <tr>
+                                    <td>2024-02-20 14:00</td>
+                                    <td>24.2°C</td>
+                                    <td>64%</td>
+                                    <td>Fermé</td>
+                                </tr>
+                                <!-- Plus de données... -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Alertes Vol -->
+            <div class="dashboard-content" id="alertes-section" style="display:none;">
+                <div class="section-header">
+                    <h2>Gestion des Alertes Vol</h2>
+                </div>
+
+                <div class="alerts-config">
+                    <div class="alert-settings-card">
+                        <h3>Configuration des alertes</h3>
+                        <div class="form-group">
+                            <label>Email pour les alertes</label>
+                            <input type="email" value="john.doe@example.com" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Délai avant alerte (secondes)</label>
+                            <input type="number" value="30" min="0" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="switch-label">
+                                <input type="checkbox" checked>
+                                <span class="switch-slider"></span>
+                                Activer les alertes par email
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="temporary-disable-card">
+                        <h3>Désactivation temporaire</h3>
+                        <div class="form-group">
+                            <label>Durée de désactivation</label>
+                            <select class="form-control">
+                                <option>30 minutes</option>
+                                <option>1 heure</option>
+                                <option>2 heures</option>
+                                <option>4 heures</option>
+                            </select>
+                        </div>
+                        <button class="disable-btn">
+                            <i class="fa-solid fa-clock"></i>
+                            Désactiver temporairement
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alerts-history">
+                    <h3>Historique des alertes</h3>
+                    <table class="alerts-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Ruche</th>
+                                <th>Événement</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2024-02-20 15:45</td>
+                                <td>Ruche #1</td>
+                                <td>Ouverture couvercle</td>
+                                <td><span class="status resolved">Résolu</span></td>
+                            </tr>
+                            <tr>
+                                <td>2024-02-19 10:30</td>
+                                <td>Ruche #3</td>
+                                <td>Ouverture couvercle</td>
+                                <td><span class="status false-alarm">Fausse alerte</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECTION GESTION APICULTEURS -->
+            <div class="dashboard-content" id="apiculteurs-section" style="display:none;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+                    <h2 style="font-size:2em; color:#bfa900; font-weight:700; margin:0; letter-spacing:1px;">Gestion des Apiculteurs</h2>
+                    <button class="add-beekeeper-btn" id="openBeekeeperModal" style="background:linear-gradient(90deg,#ffd700 0%,#ff9800 100%); color:#fff; border:none; border-radius:24px; padding:12px 28px; font-size:1.1em; font-weight:600; box-shadow:0 2px 10px #ffd70033; cursor:pointer; transition:background 0.2s;">
+                        <i class="fa-solid fa-plus"></i> Ajouter un apiculteur
+                    </button>
+                </div>
+
+                <!-- Filtres et recherche -->
+                <div style="background:#fff; border-radius:12px; padding:20px; margin-bottom:24px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:250px;">
+                            <label for="beekeeperSearch" style="font-weight:600; color:#555; display:block; margin-bottom:8px;">Rechercher</label>
+                            <div style="position:relative;">
+                                <input type="text" id="beekeeperSearch" placeholder="Rechercher un apiculteur..." style="width:100%; padding:10px; padding-left:38px; border-radius:8px; border:1px solid #ddd;">
+                                <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#aaa;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grille des apiculteurs -->
+                <div class="beekeepers-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:24px;">
+                    <!-- Les cartes des apiculteurs seront générées dynamiquement -->
+                </div>
+            </div>
+
+            <!-- MODALE AJOUT/MODIF APICULTEUR -->
+            <div id="beekeeperModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:10000; align-items:center; justify-content:center;">
+                <div class="modal-content" style="background:#fff; border-radius:18px; box-shadow:0 8px 32px #ffd70033; padding:32px 28px; min-width:320px; max-width:95vw; position:relative; width:500px;">
+                    <button id="closeBeekeeperModal" style="position:absolute; top:18px; right:18px; background:none; border:none; font-size:1.5em; color:#bfa900; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 id="beekeeperModalTitle" style="color:#bfa900; font-weight:700; margin-bottom:18px;">Ajouter un apiculteur</h3>
+                    <form id="beekeeperForm">
+                        <div style="margin-bottom:16px;">
+                            <label for="beekeeperName" style="font-weight:600; color:#bfa900;">Nom complet</label>
+                            <input type="text" id="beekeeperName" placeholder="Nom de l'apiculteur" required style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label for="beekeeperEmail" style="font-weight:600; color:#bfa900;">Email</label>
+                            <input type="email" id="beekeeperEmail" placeholder="email@exemple.com" required style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label for="beekeeperPhone" style="font-weight:600; color:#bfa900;">Téléphone</label>
+                            <input type="tel" id="beekeeperPhone" placeholder="+33 6 12 34 56 78" style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label for="beekeeperLevel" style="font-weight:600; color:#bfa900;">Niveau d'expérience</label>
+                            <select id="beekeeperLevel" style="width:100%; padding:10px; border-radius:8px; border:1.2px solid #ffd700; margin-top:4px;">
+                                <option value="debutant">Débutant</option>
+                                <option value="intermediaire">Intermédiaire</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                        </div>
+                        <div style="margin-top:24px; text-align:right;">
+                            <button type="submit" style="background:linear-gradient(90deg,#ffd700 0%,#ff9800 100%); color:#fff; border:none; border-radius:14px; padding:12px 32px; font-size:1.1em; font-weight:600; box-shadow:0 2px 10px #ffd70033; cursor:pointer; transition:background 0.2s;">
+                                <i class="fa-solid fa-save"></i> Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/beekeepers.js}"></script>
+    <script th:src="@{/js/admin.js}"></script>
+</body>
+</html>
