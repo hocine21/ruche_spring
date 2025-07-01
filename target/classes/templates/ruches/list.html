@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Liste des Ruches</title></head>
+<body>
+<h2>Mes ruches</h2>
+
+<p th:if="${error == 'aucun_capteur_libre'}" style="color:red;">
+    Aucun capteur disponible pour créer une nouvelle ruche.
+</p>
+
+<a th:href="@{/ruches/new}">Ajouter une ruche</a>
+<table>
+    <tr>
+        <th>Nom</th><th>Emplacement</th><th>Capteur</th><th>Actions</th>
+    </tr>
+    <tr th:each="ruche : ${ruches}">
+        <td th:text="${ruche.nom}"></td>
+        <td th:text="${ruche.emplacement}"></td>
+        <td th:text="${ruche.referenceCapteur}"></td>
+        <td>
+            <a th:href="@{'/ruches/edit/' + ${ruche.id}}">Modifier</a>
+            <a th:href="@{'/ruches/delete/' + ${ruche.id}}">Supprimer</a>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

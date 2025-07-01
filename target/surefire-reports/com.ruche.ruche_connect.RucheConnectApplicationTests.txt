@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.ruche.ruche_connect.RucheConnectApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.585 s -- in com.ruche.ruche_connect.RucheConnectApplicationTests

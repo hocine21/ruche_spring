@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Ruches - Ruche</title>
+    <link rel="stylesheet" href="ruches.css">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div id="menu-container"></div>
+
+        <main class="main-content">
+            <div class="section-header">
+                <h2>Gestion des Ruches</h2>
+                <div class="header-buttons">
+                    <button class="add-apiary-btn">
+                        <i class="fas fa-plus"></i> Ajouter un Rucher
+                    </button>
+                    <button class="add-global-hive-btn">
+                        <i class="fas fa-plus"></i> Ajouter une Ruche
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters Container -->
+            <div class="filters-container">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>Rucher</label>
+                        <select id="apiary-filter">
+                            <option value="">Tous les ruchers</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Type de Ruche</label>
+                        <select id="hive-type-filter">
+                            <option value="">Tous les types</option>
+                            <option value="dadant">Dadant</option>
+                            <option value="langstroth">Langstroth</option>
+                            <option value="warré">Warré</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Statut</label>
+                        <select id="status-filter">
+                            <option value="">Tous les statuts</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="maintenance">En maintenance</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Recherche</label>
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="search-input" placeholder="Rechercher une ruche...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <table id="hives-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Rucher</th>
+                            <th>Type</th>
+                            <th>Dernière Inspection</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Les ruches seront ajoutées dynamiquement ici -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Apiary Modal -->
+    <div class="modal" id="apiary-modal">
+        <div class="modal-content">
+            <button class="close-modal-btn">&times;</button>
+            <h2>Gestion du Rucher</h2>
+            <form id="apiary-form">
+                <div class="form-group">
+                    <label>Nom du Rucher</label>
+                    <input type="text" id="apiary-name" required placeholder="Ex: Rucher Principal">
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="apiary-address" required placeholder="Adresse du rucher">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="apiary-description" placeholder="Description du rucher..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Hive Modal -->
+    <div class="modal" id="hive-modal">
+        <div class="modal-content">
+            <button class="close-modal-btn">&times;</button>
+            <h2>Gestion de la Ruche</h2>
+            <form id="hive-form">
+                <div class="form-group">
+                    <label>Rucher</label>
+                    <select id="hive-apiary" required>
+                        <option value="">Sélectionner un rucher</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nom de la Ruche</label>
+                    <input type="text" id="hive-name" required placeholder="Ex: Ruche A1">
+                </div>
+                <div class="form-group">
+                    <label>Type de Ruche</label>
+                    <select id="hive-type" required>
+                        <option value="">Sélectionner un type</option>
+                        <option value="dadant">Dadant</option>
+                        <option value="langstroth">Langstroth</option>
+                        <option value="warré">Warré</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="hive-notes" placeholder="Ajouter des notes..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Statut</label>
+                    <div class="status-options">
+                        <div class="status-option">
+                            <input type="radio" name="status" value="active" id="status-active">
+                            <label for="status-active">Active</label>
+                        </div>
+                        <div class="status-option">
+                            <input type="radio" name="status" value="inactive" id="status-inactive">
+                            <label for="status-inactive">Inactive</label>
+                        </div>
+                        <div class="status-option">
+                            <input type="radio" name="status" value="maintenance" id="status-maintenance">
+                            <label for="status-maintenance">En maintenance</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="menu.js"></script>
+    <script src="ruches.js"></script>
+</body>
+</html> 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesures & Historique - Ruche</title>
+    <link rel="stylesheet" href="mesures.css">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Le menu sera chargé ici dynamiquement -->
+        <div id="menu-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Section Mesures -->
+            <div class="dashboard-content">
+                <div class="section-header">
+                    <h2>Mesures et Historique</h2>
+                    <div class="controls">
+                        <select id="ruche-select" class="custom-select">
+                            <option value="">Sélectionner une ruche</option>
+                            <option value="1">Ruche #1</option>
+                            <option value="2">Ruche #2</option>
+                        </select>
+                        <select id="periode-select" class="custom-select">
+                            <option value="jour">Dernières 24h</option>
+                            <option value="semaine">Dernière semaine</option>
+                        </select>
+                        <button class="view-type-btn active" data-view="graph">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </button>
+                        <button class="view-type-btn" data-view="list">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Affichage des mesures -->
+                <div class="measures-display">
+                    <!-- Valeurs instantanées -->
+                    <div class="current-measures">
+                        <div class="measure-card">
+                            <i class="fa-solid fa-temperature-three-quarters"></i>
+                            <div class="measure-info">
+                                <span class="measure-value">24.5°C</span>
+                                <span class="measure-label">Température</span>
+                            </div>
+                        </div>
+                        <div class="measure-card">
+                            <i class="fa-solid fa-droplet"></i>
+                            <div class="measure-info">
+                                <span class="measure-value">65%</span>
+                                <span class="measure-label">Humidité</span>
+                            </div>
+                        </div>
+                        <div class="measure-card">
+                            <i class="fa-solid fa-lock"></i>
+                            <div class="measure-info">
+                                <span class="measure-value">Fermé</span>
+                                <span class="measure-label">État couvercle</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Graphique -->
+                    <div class="measures-graph">
+                        <canvas id="measuresChart"></canvas>
+                    </div>
+
+                    <!-- Liste (initialement cachée) -->
+                    <div class="measures-list" style="display:none;">
+                        <table class="measures-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Température</th>
+                                    <th>Humidité</th>
+                                    <th>État couvercle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2024-02-20 14:30</td>
+                                    <td>24.5°C</td>
+                                    <td>65%</td>
+                                    <td>Fermé</td>
+                                </tr>
+                                <tr>
+                                    <td>2024-02-20 14:00</td>
+                                    <td>24.2°C</td>
+                                    <td>64%</td>
+                                    <td>Fermé</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="menu.js"></script>
+    <script src="mesures.js"></script>
+</body>
+</html> 

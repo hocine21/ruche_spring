@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Email System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        .btn-danger { background: #dc3545; }
+        .result { margin-top: 20px; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .section { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #007bff; }
+        .section.danger { border-left-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test du Système d'Email RucheConnect</h1>
+        
+        <!-- Test Email -->
+        <div class="section">
+            <h2>📧 Test Email Direct</h2>
+            <div class="form-group">
+                <label for="email">Email de test:</label>
+                <input type="email" id="email" value="hocinelampro@gmail.com" placeholder="votre@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="ruche">Nom de la ruche:</label>
+                <input type="text" id="ruche" value="Ruche Test" placeholder="Nom de la ruche">
+            </div>
+            
+            <button onclick="testEmail()">📧 Envoyer Email de Test</button>
+        </div>
+        
+        <!-- Simulation Alerte -->
+        <div class="section danger">
+            <h2>🚨 Simulation d'Alerte Couvercle</h2>
+            <p style="color: #666; margin-bottom: 15px;">
+                Simule l'ouverture d'un couvercle de ruche pour tester le système de surveillance automatique.
+            </p>
+            
+            <div class="form-group">
+                <label for="rucheId">ID de la ruche:</label>
+                <input type="text" id="rucheId" value="ruche_test_001" placeholder="ID de la ruche">
+            </div>
+            
+            <button onclick="simulateAlert()" class="btn-danger">🚨 Simuler Alerte Couvercle</button>
+        </div>
+        
+        <div id="result" class="result" style="display: none;"></div>
+        
+        <h2>📊 Statut du Système</h2>
+        <div id="status">Vérification...</div>
+    </div>
+    
+    <script>
+        async function testEmail() {
+            const email = document.getElementById('email').value;
+            const ruche = document.getElementById('ruche').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!email || !ruche) {
+                showResult('❌ Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/alertes/api/test-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(email)}&rucheNom=${encodeURIComponent(ruche)}`
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    showResult(result, 'success');
+                } else {
+                    showResult(result, 'error');
+                }
+            } catch (error) {
+                showResult('❌ Erreur lors du test: ' + error.message, 'error');
+            }
+        }
+        
+        async function simulateAlert() {
+            const rucheId = document.getElementById('rucheId').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!rucheId) {
+                showResult('❌ Veuillez entrer l\'ID de la ruche', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/alertes/api/simulate-alert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `rucheId=${encodeURIComponent(rucheId)}`
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    showResult(result, 'success');
+                } else {
+                    showResult(result, 'error');
+                }
+            } catch (error) {
+                showResult('❌ Erreur lors de la simulation: ' + error.message, 'error');
+            }
+        }
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = message;
+        }
+        
+        async function checkStatus() {
+            try {
+                const response = await fetch('/alertes/api/status');
+                const status = await response.text();
+                document.getElementById('status').innerHTML = status.replace(/\n/g, '<br>');
+            } catch (error) {
+                document.getElementById('status').innerHTML = '❌ Erreur lors de la vérification du statut';
+            }
+        }
+        
+        // Vérifier le statut au chargement
+        checkStatus();
+    </script>
+</body>
+</html> 
