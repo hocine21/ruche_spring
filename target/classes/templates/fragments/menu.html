@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Fragment du menu sidebar -->
+    <div th:fragment="sidebar" class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/images/ChatGPT Image 11 mai 2025, 22_42_25.png" alt="Logo RucheConnect" class="logo">
+                <h2>RucheConnect</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li th:class="${#httpServletRequest.requestURI == '/admin' ? 'active' : ''}">
+                        <a th:href="@{/admin}">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span>Tableau de bord</span>
+                        </a>
+                    </li>
+                    <li th:class="${#httpServletRequest.requestURI == '/ruchers' ? 'active' : ''}">
+                        <a th:href="@{/ruchers}">
+                            <i class="fa-solid fa-house-chimney"></i>
+                            <span>Gestion Ruchers</span>
+                        </a>
+                    </li>
+                    <li th:class="${#httpServletRequest.requestURI == '/ruches' ? 'active' : ''}">
+                        <a th:href="@{/ruches}">
+                            <i class="fa-solid fa-bee"></i>
+                            <span>Gestion Ruches</span>
+                        </a>
+                    </li>
+                    <li th:class="${#httpServletRequest.requestURI == '/mesures' ? 'active' : ''}">
+                        <a th:href="@{/mesures}">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Mesures & Historique</span>
+                        </a>
+                    </li>
+                    <li th:class="${#httpServletRequest.requestURI == '/alertes' ? 'active' : ''}">
+                        <a th:href="@{/alertes}">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Alertes Vol</span>
+                        </a>
+                    </li>
+                    <li th:class="${#httpServletRequest.requestURI == '/apiculteurs' ? 'active' : ''}">
+                        <a th:href="@{/apiculteurs}">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Gestion Apiculteurs</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a th:href="@{/logout}" class="logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Rechercher...">
+                </div>
+                <div class="user-menu">
+                    <div class="notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="user-info">
+                        <img src="https://ui-avatars.com/api/?name=John+Doe" alt="User Avatar">
+                        <span th:text="${email}">John Doe</span>
+                        <span class="user-role" th:text="${role}"></span>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Contenu de la page sera inséré ici -->
+            <div th:replace="${content}">
+                <!-- Le contenu de chaque page sera remplacé ici -->
+            </div>
+        </main>
+    </div>
+</body>
+</html> 

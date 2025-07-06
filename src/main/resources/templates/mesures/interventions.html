@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Interventions sur les ruches</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fffbe6;
+            margin: 0;
+            padding: 0;
+            color: #222;
+        }
+        h1 {
+            text-align: center;
+            color: #ff9800;
+            margin-top: 30px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px #fff3cd;
+        }
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            justify-content: center;
+            margin: 40px auto 0 auto;
+            max-width: 1300px;
+        }
+        .card {
+            background: linear-gradient(135deg, #fffde4 0%, #ffe9b3 100%);
+            border-radius: 18px;
+            box-shadow: 0 6px 24px rgba(255, 193, 7, 0.10);
+            padding: 28px 24px 24px 24px;
+            min-width: 320px;
+            max-width: 370px;
+            flex: 1 1 340px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 2px solid #ffe082;
+            transition: box-shadow 0.3s, transform 0.2s;
+            animation: cardAppear 0.7s cubic-bezier(.68,-0.55,.27,1.55);
+        }
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(40px) scale(0.95);}
+            to   { opacity: 1; transform: translateY(0) scale(1);}
+        }
+        .card:hover {
+            box-shadow: 0 12px 32px rgba(255, 193, 7, 0.18);
+            border-color: #ffb300;
+            transform: translateY(-6px) scale(1.03);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+        .card-header .intervention-logo {
+            font-size: 2.2em;
+            color: #ffb300;
+            background: #fffde7;
+            border-radius: 50%;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.10);
+            animation: logoPop 0.7s cubic-bezier(.68,-0.55,.27,1.55);
+        }
+        @keyframes logoPop {
+            0% { transform: scale(0.7) rotate(-20deg);}
+            80% { transform: scale(1.1) rotate(10deg);}
+            100% { transform: scale(1) rotate(0);}
+        }
+        .ruche-name {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #ff9800;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 4px #fffde7;
+        }
+        .intervention-btn {
+            background: linear-gradient(135deg, #ffb300 0%, #ff9800 100%);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            margin-left: auto;
+            margin-right: 0;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.13);
+            transition: background 0.2s, transform 0.2s;
+            font-size: 1.3em;
+            position: relative;
+            z-index: 2;
+            outline: none;
+        }
+        .intervention-btn:active {
+            transform: scale(0.93) rotate(-8deg);
+        }
+        .intervention-btn .fa-paper-plane {
+            transition: transform 0.3s;
+        }
+        .intervention-btn.sending .fa-paper-plane {
+            transform: translateX(8px) rotate(-20deg) scale(1.2);
+            color: #fffde7;
+        }
+        .measure-info {
+            margin-top: 10px;
+            font-size: 1.05rem;
+            color: #374151;
+            background: #fffde7;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 4px rgba(255, 193, 7, 0.07);
+        }
+        .measure-info em {
+            color: #b71c1c;
+        }
+        .notes-form {
+            display: none;
+            margin-top: 12px;
+            background: #fffde7;
+            border-radius: 8px;
+            padding: 12px 10px 10px 10px;
+            box-shadow: 0 1px 4px rgba(255, 193, 7, 0.07);
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px);}
+            to   { opacity: 1; transform: translateY(0);}
+        }
+        .notes-form textarea {
+            width: 100%;
+            resize: vertical;
+            min-height: 60px;
+            border: 1.5px solid #ffb300;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.98rem;
+            font-family: inherit;
+            color: #222;
+            background: #fff;
+            transition: border-color 0.3s;
+        }
+        .notes-form textarea:focus {
+            outline: none;
+            border-color: #ff9800;
+            box-shadow: 0 0 8px #ffe082;
+        }
+        .submit-btn {
+            margin-top: 10px;
+            background: linear-gradient(135deg, #ffb300 0%, #ff9800 100%);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.10);
+        }
+        .submit-btn:hover {
+            background: #ff9800;
+            transform: scale(1.05);
+        }
+        .interventions-history {
+            margin-top: 10px;
+            background: #fff3cd;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 0.97rem;
+            color: #795548;
+            box-shadow: 0 1px 4px rgba(255, 193, 7, 0.07);
+            animation: fadeIn 0.5s;
+        }
+        .interventions-history h4 {
+            margin: 0 0 6px 0;
+            font-size: 1.05em;
+            color: #ff9800;
+        }
+        .interventions-history ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+        .interventions-history li {
+            margin-bottom: 4px;
+            list-style: disc;
+        }
+        @media (max-width: 900px) {
+            .cards-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .card {
+                min-width: 90vw;
+                max-width: 98vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/images/ChatGPT Image 11 mai 2025, 22_42_25.png" alt="Logo RucheConnect" class="logo">
+                <h2>RucheConnect</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#dashboard">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span>Tableau de bord</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/ruchers}" id="menu-ruchers">
+                            <i class="fa-solid fa-house-chimney"></i>
+                            <span>Gestion Ruchers</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/ruches}" id="menu-ruches">
+                            <i class="fa-solid fa-bee"></i>
+                            <span>Gestion Ruches</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#mesures" id="menu-mesures">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Mesures & Historique</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#alertes" id="menu-alertes">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Alertes Vol</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#apiculteurs" id="menu-apiculteurs">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Gestion Apiculteurs</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a th:href="@{/logout}" class="logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Rechercher...">
+                </div>
+                <div class="user-menu">
+                    <div class="notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="user-info">
+                        <img src="https://ui-avatars.com/api/?name=John+Doe" alt="User Avatar">
+                        <span th:text="${email}">John Doe</span>
+                        <span class="user-role" th:text="${role}" style="margin-left:10px; color:#bfa900; font-size:0.95em;"></span>
+                    </div>
+                </div>
+            </header>
+          
+            <h1>Gestion des interventions sur vos ruches</h1>
+
+            <div class="cards-container">
+                <div th:each="ruche : ${ruches}" class="card">
+                    <div class="card-header">
+                        <span class="intervention-logo">
+                            <i class="fa-solid fa-screwdriver-wrench"></i>
+                        </span>
+                        <span class="ruche-name" th:text="'Ruche ' + ${ruche.nom}">Ruche Nom</span>
+                        <button type="button"
+                                class="intervention-btn"
+                                th:attr="onclick='toggleNotesForm(' + ${ruche.id} + ')'"
+                                th:id="'intervention-btn-' + ${ruche.id}"
+                                title="Intervenir sur cette ruche">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <div class="measure-info" th:if="${derniereMesureParRuche[ruche.id]} != null">
+                        <div><strong>Dernière mesure :</strong></div>
+                        <div>Température : <span th:text="${derniereMesureParRuche[ruche.id].temperature} + ' °C'">23 °C</span></div>
+                        <div>Humidité : <span th:text="${derniereMesureParRuche[ruche.id].humidite} + ' %'">45 %</span></div>
+                        <div>État couvercle : <span th:text="${derniereMesureParRuche[ruche.id].etatCouvercle}">FERMÉ</span></div>
+                        <div>Date : <span th:text="${derniereMesureParRuche[ruche.id].horodatage}">2025-07-04 15:30:00</span></div>
+                    </div>
+                    <div class="measure-info" th:if="${derniereMesureParRuche[ruche.id]} == null">
+                        <em>Aucune mesure disponible</em>
+                    </div>
+
+                    <!-- Formulaire de notes caché par défaut -->
+                    <form th:action="@{/mesures/intervention}" method="post" th:id="'notes-form-'+${ruche.id}" class="notes-form">
+                        <input type="hidden" name="rucheId" th:value="${ruche.id}" />
+                        <label th:for="'notes-' + ${ruche.id}" style="font-weight: 600; font-size: 0.95rem; color: #ff9800;">Notes intervention :</label>
+                        <textarea name="notes" th:id="'notes-' + ${ruche.id}" placeholder="Ajouter vos notes ici..."></textarea>
+                        <button type="submit" class="submit-btn">Envoyer</button>
+                    </form>
+
+                    <!-- Historique des interventions -->
+                    <div class="interventions-history"
+                         th:if="${interventionsParRuche != null and interventionsParRuche[ruche.id] != null}">
+                        <h4>Historique des interventions</h4>
+                        <ul>
+                            <li th:each="interv : ${interventionsParRuche[ruche.id]}"
+                                th:text="${#dates.format(interv.date, 'dd/MM/yyyy HH:mm')} + ' : ' + (interv.notes != null ? interv.notes : 'Aucune note')">
+                                04/07/2025 15:30 : Inspection rapide
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+function toggleNotesForm(rucheId) {
+    var form = document.getElementById('notes-form-' + rucheId);
+    var btn = document.getElementById('intervention-btn-' + rucheId);
+    if (form.style.display === 'block') {
+        form.style.display = 'none';
+        btn.classList.remove('sending');
+    } else {
+        form.style.display = 'block';
+        form.querySelector('textarea').focus();
+        btn.classList.add('sending');
+    }
+}
+
+// Animation d’envoi sur le bouton lors de la soumission
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.notes-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            var rucheId = this.id.replace('notes-form-', '');
+            var btn = document.getElementById('intervention-btn-' + rucheId);
+            if (btn) {
+                btn.classList.add('sending');
+                setTimeout(function() {
+                    btn.classList.remove('sending');
+                }, 1200);
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

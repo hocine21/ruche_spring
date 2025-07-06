@@ -1,27 +1,445 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title>Liste des Ruches</title></head>
+<head>
+    <meta charset="UTF-8" />
+    <title>Liste des Ruches</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ecf0f1;
+            margin: 30px auto;
+            max-width: 900px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        p.error {
+            background-color: #fcebea;
+            color: #cc1f1a;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 12px 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        p.error i {
+            color: #e74c3c;
+        }
+
+        a.add-ruche {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 16px;
+            background-color: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        a.add-ruche:hover {
+            background-color: #219150;
+        }
+
+        form.filter-form {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        select {
+            padding: 7px 12px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1.5px solid #bbb;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus {
+            border-color: #2980b9;
+            outline: none;
+        }
+
+        /* Nouveau style cartes */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .ruche-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            position: relative; /* Added for positioning icons */
+        }
+
+        .ruche-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .ruche-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .ruche-card p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .ruche-card i {
+            color: #3498db;
+            margin-right: 8px;
+        }
+
+        .ruche-card .actions {
+            margin-top: 12px;
+        }
+
+        .ruche-card .action-link {
+            margin-right: 15px;
+            color: #2980b9;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .ruche-card .action-link:hover {
+            text-decoration: underline;
+            color: #1c5980;
+        }
+
+        .alert-toggle {
+            background: none;
+            border: none;
+            color: #bfa900;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 1em;
+            transition: color 0.2s;
+            margin-right: 10px;
+            outline: none;
+        }
+        .alert-toggle.active {
+            color: #e67e22;
+        }
+        .alert-toggle i {
+            font-size: 1.2em;
+            transition: color 0.2s;
+        }
+        .alert-toggle.active i {
+            color: #e67e22;
+            animation: bellRing 0.7s;
+        }
+        @keyframes bellRing {
+            0% { transform: rotate(0); }
+            20% { transform: rotate(-15deg); }
+            40% { transform: rotate(10deg); }
+            60% { transform: rotate(-10deg); }
+            80% { transform: rotate(5deg); }
+            100% { transform: rotate(0); }
+        }
+
+        .card-icons {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            display: flex;
+            gap: 12px;
+            z-index: 2;
+        }
+
+        .icon-btn {
+            background: rgba(255, 215, 0, 0.12);
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #bfa900;
+            font-size: 1.25em;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(255,193,7,0.08);
+            outline: none;
+        }
+
+        .icon-btn:hover, .icon-btn.active {
+            background: #ffe082;
+            color: #e67e22;
+            box-shadow: 0 4px 16px rgba(255,193,7,0.18);
+        }
+
+        .show-measures-btn {
+            background: #fff9e1;
+            border: 1.5px solid #ffd700;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #bfa900;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .show-measures-btn.active, .show-measures-btn:hover {
+            background: #ffd700;
+            color: #fff;
+        }
+        .blur-bg { filter: blur(3px) grayscale(0.2); pointer-events: none; }
+        .badge {
+            background: #e67e22;
+            color: #fff;
+            border-radius: 50%;
+            padding: 2px 7px;
+            font-size: 0.85em;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+    </style>
+</head>
 <body>
-<h2>Mes ruches</h2>
 
-<p th:if="${error == 'aucun_capteur_libre'}" style="color:red;">
-    Aucun capteur disponible pour créer une nouvelle ruche.
-</p>
+    <h2>Mes ruches</h2>
 
-<a th:href="@{/ruches/new}">Ajouter une ruche</a>
-<table>
-    <tr>
-        <th>Nom</th><th>Emplacement</th><th>Capteur</th><th>Actions</th>
-    </tr>
-    <tr th:each="ruche : ${ruches}">
-        <td th:text="${ruche.nom}"></td>
-        <td th:text="${ruche.emplacement}"></td>
-        <td th:text="${ruche.referenceCapteur}"></td>
-        <td>
-            <a th:href="@{'/ruches/edit/' + ${ruche.id}}">Modifier</a>
-            <a th:href="@{'/ruches/delete/' + ${ruche.id}}">Supprimer</a>
-        </td>
-    </tr>
-</table>
+    <p class="error" th:if="${error == 'aucun_capteur_libre'}">
+        <i class="fas fa-exclamation-triangle"></i>
+        Aucun capteur disponible pour créer une nouvelle ruche.
+    </p>
+
+    <a href="#" th:href="@{/ruches/new}" class="add-ruche">
+        <i class="fas fa-plus-circle"></i> Ajouter une ruche
+    </a>
+
+    <form class="filter-form" method="get" th:action="@{/ruches}">
+        <label for="filterRucher">Filtrer par rucher :</label>
+        <select id="filterRucher" name="filterRucherId" onchange="this.form.submit()">
+            <option value="" th:selected="${filterRucherId == null or filterRucherId == ''}">Tous</option>
+            <option th:each="rucher : ${ruchers}" 
+                    th:value="${rucher}" 
+                    th:text="${ruchersMap[rucher]}" 
+                    th:selected="${rucher == filterRucherId}">
+            </option>
+        </select>
+    </form>
+
+    <!-- ✅ Remplace le tableau ici par des cartes -->
+    <div class="card-container">
+        <div class="ruche-card" th:each="ruche : ${ruches}">
+            <h3 th:text="${ruche.nom}">Nom de la ruche</h3>
+            <p><i class="fas fa-map-marker-alt"></i> <span th:text="${ruche.emplacement}">Emplacement</span></p>
+            <p><i class="fas fa-tree"></i> <span th:text="${ruchersMap[ruche.rucherId]}">Nom rucher</span></p>
+            <p><i class="fas fa-microchip"></i> <span th:text="${ruche.referenceCapteur}">Capteur</span></p>
+            <div class="card-icons">
+                <a href="#" class="icon-btn" title="Intervention" onclick="openInterventionModal(this)" th:attr="data-ruche-id=${ruche.id}">
+                    <i class="fas fa-tools"></i>
+                    <span class="badge"
+                          th:text="${interventionsCount != null and interventionsCount[ruche.id] != null ? interventionsCount[ruche.id] : 0}"
+                          th:if="${interventionsCount != null and interventionsCount[ruche.id] != null and interventionsCount[ruche.id] > 0}">
+                    </span>
+                </a>
+                <button type="button" class="icon-btn alert-toggle"
+                        th:classappend="${ruche.alertes} ? 'active' : ''"
+                        onclick="toggleAlerte(this)"
+                        th:attr="data-ruche-id=${ruche.id}, data-alertes=${ruche.alertes}">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="show-measures-btn" onclick="showMeasures(this)" th:attr="data-ruche-id=${ruche.id}">
+                    <i class="fas fa-chart-line"></i>
+                </button>
+            </div>
+            <div class="measures-container" style="display:none;">
+                <div class="measure-values">
+                    <div><i class="fas fa-temperature-high"></i> <span class="temp-value">--</span> °C</div>
+                    <div><i class="fas fa-tint"></i> <span class="hum-value">--</span> %</div>
+                    <div><i class="fas fa-box-open"></i> <span class="couv-value">--</span></div>
+                </div>
+            </div>
+            <div class="actions">
+               
+               
+               
+                <!-- Actions classiques -->
+                <a th:href="@{'/ruches/edit/' + ${ruche.id}}" class="action-link">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+                <a th:href="@{'/ruches/delete/' + ${ruche.id}}" class="action-link"
+                   onclick="return confirm('Supprimer cette ruche ?');">
+                    <i class="fas fa-trash-alt"></i> Supprimer
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="intervention-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:10px; padding:32px 28px; min-width:320px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;">
+            <button onclick="closeInterventionModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.3em; cursor:pointer; color:#888;"><i class="fas fa-times"></i></button>
+            <h3 style="margin-top:0; color:#2c3e50;">Nouvelle intervention</h3>
+            <form id="intervention-form" method="post" action="/interventions/ajouter">
+                <input type="hidden" name="rucheId" id="interv-ruche-id" />
+                <label for="interv-commentaire">Commentaire :</label><br>
+                <textarea name="commentaire" id="interv-commentaire" rows="3" style="width:100%; border-radius:6px; border:1.2px solid #bbb; padding:8px; margin-bottom:16px;"></textarea><br>
+                <input type="hidden" name="intervention" value="true" />
+                <button type="submit" style="background:#27ae60; color:#fff; border:none; border-radius:5px; padding:10px 18px; font-weight:600; cursor:pointer;">Valider</button>
+            </form>
+            <div id="interv-confirm" style="display:none; color:#27ae60; font-weight:600; margin-top:12px;"><i class="fas fa-check-circle"></i> Intervention enregistrée !</div>
+            <h4>Interventions précédentes</h4>
+            <div id="interventions-list"></div>
+        </div>
+    </div>
+
+    <script>
+        async function toggleAlerte(btn) {
+            const rucheId = btn.getAttribute('data-ruche-id');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                const res = await fetch(`/alertes/etat/${rucheId}/toggle`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    if (data.alertes) {
+                        btn.classList.add('active');
+                        btn.setAttribute('data-alertes', 'true');
+                    } else {
+                        btn.classList.remove('active');
+                        btn.setAttribute('data-alertes', 'false');
+                    }
+                }
+            } catch (e) {}
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-bell"></i>';
+        }
+    </script>
+
+    <script>
+async function showMeasures(btn) {
+    const rucheId = btn.getAttribute('data-ruche-id');
+    const card = btn.closest('.ruche-card');
+    const container = card.querySelector('.measures-container');
+    const tempSpan = container.querySelector('.temp-value');
+    const humSpan = container.querySelector('.hum-value');
+    const couvSpan = container.querySelector('.couv-value');
+
+    // Si déjà affiché, toggle
+    if (container.style.display === 'block') {
+        container.style.display = 'none';
+        btn.classList.remove('active');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const res = await fetch('/ruches/mesures');
+        const data = await res.json();
+        const rucheData = data[rucheId];
+        if (rucheData && rucheData.mesure) {
+            const m = rucheData.mesure;
+            tempSpan.textContent = m.temperature !== undefined ? m.temperature : '--';
+            humSpan.textContent = m.humidite !== undefined ? m.humidite : '--';
+            couvSpan.textContent = m.etatCouvercle !== undefined ? m.etatCouvercle : '--';
+        } else {
+            tempSpan.textContent = '--';
+            humSpan.textContent = '--';
+            couvSpan.textContent = '--';
+        }
+        container.style.display = 'block';
+        btn.classList.add('active');
+    } catch (e) {
+        tempSpan.textContent = '--';
+        humSpan.textContent = '--';
+        couvSpan.textContent = '--';
+        container.style.display = 'block';
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-chart-line"></i>';
+}
+</script>
+
+<script>
+async function showInterventions(rucheId) {
+    const res = await fetch(`/interventions/liste?rucheId=${rucheId}`);
+    const data = await res.json();
+    let html = '';
+    data.forEach(interv => {
+        html += `<div class="interv-item">
+            <b>${interv.dateHeure}</b> : ${interv.commentaire}
+        </div>`;
+    });
+    document.getElementById('interventions-list').innerHTML = html;
+}
+
+function openInterventionModal(btn) {
+    const rucheId = btn.getAttribute('data-ruche-id');
+    document.getElementById('interv-ruche-id').value = rucheId;
+    document.getElementById('intervention-modal').style.display = 'flex';
+    document.querySelector('.card-container').classList.add('blur-bg');
+    document.getElementById('interv-commentaire').value = '';
+    document.getElementById('interv-confirm').style.display = 'none';
+    showInterventions(rucheId); // Load interventions when modal opens
+}
+function closeInterventionModal() {
+    document.getElementById('intervention-modal').style.display = 'none';
+    document.querySelector('.card-container').classList.remove('blur-bg');
+}
+document.getElementById('intervention-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const res = await fetch(form.action, { method: 'POST', body: formData });
+    if (res.redirected) {
+        document.getElementById('interv-confirm').style.display = 'block';
+        setTimeout(() => { closeInterventionModal(); }, 1200);
+    } else {
+        document.getElementById('interv-confirm').textContent = 'Erreur lors de l\'enregistrement.';
+        document.getElementById('interv-confirm').style.color = '#e74c3c';
+        document.getElementById('interv-confirm').style.display = 'block';
+    }
+};
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const res = await fetch('/interventions/count');
+    const counts = await res.json();
+    document.querySelectorAll('.icon-btn[title="Intervention"]').forEach(btn => {
+        const rucheId = btn.getAttribute('data-ruche-id');
+        const badge = btn.querySelector('.badge');
+        if (badge && counts[rucheId] > 0) {
+            badge.textContent = counts[rucheId];
+            badge.style.display = '';
+        } else if (badge) {
+            badge.style.display = 'none';
+        }
+    });
+});
+</script>
+
 </body>
 </html>

@@ -15,8 +15,9 @@ public class RucherController {
 
     private final DatabaseReference ruchersRef = FirebaseDatabase.getInstance().getReference("ruchers");
 
-    @GetMapping
-    public String listRuchers(HttpSession session, Model model) throws InterruptedException {
+    // Affiche les ruchers dans la page admin.html (route spécifique)
+    @GetMapping("/infos")
+    public String afficherInfosRuchers(HttpSession session, Model model) throws InterruptedException {
         String apiculteurId = (String) session.getAttribute("uid");
         List<Rucher> ruchers = new ArrayList<>();
         final Object lock = new Object();
@@ -26,7 +27,9 @@ public class RucherController {
                 public void onDataChange(DataSnapshot snapshot) {
                     for (DataSnapshot child : snapshot.getChildren()) {
                         Rucher rucher = child.getValue(Rucher.class);
-                        ruchers.add(rucher);
+                        if (rucher != null) {
+                            ruchers.add(rucher);
+                        }
                     }
                     synchronized (lock) {
                         lock.notify();
@@ -40,18 +43,58 @@ public class RucherController {
                 }
             });
 
-        synchronized (lock) { lock.wait(3000); }
+        synchronized (lock) {
+            lock.wait(3000);
+        }
 
         model.addAttribute("ruchers", ruchers);
-        return "ruchers/list";
+        return "admin";  // Vue spécifique admin.html
     }
 
+    // Liste des ruchers (page gestion)
+    @GetMapping
+    public String listRuchers(HttpSession session, Model model) throws InterruptedException {
+        String apiculteurId = (String) session.getAttribute("uid");
+        List<Rucher> ruchers = new ArrayList<>();
+        final Object lock = new Object();
+
+        ruchersRef.orderByChild("apiculteurId").equalTo(apiculteurId)
+            .addListenerForSingleValueEvent(new ValueEventListener() {
+                public void onDataChange(DataSnapshot snapshot) {
+                    for (DataSnapshot child : snapshot.getChildren()) {
+                        Rucher rucher = child.getValue(Rucher.class);
+                        if (rucher != null) {
+                            ruchers.add(rucher);
+                        }
+                    }
+                    synchronized (lock) {
+                        lock.notify();
+                    }
+                }
+
+                public void onCancelled(DatabaseError error) {
+                    synchronized (lock) {
+                        lock.notify();
+                    }
+                }
+            });
+
+        synchronized (lock) {
+            lock.wait(3000);
+        }
+
+        model.addAttribute("ruchers", ruchers);
+        return "ruchers/list";  // Vue liste classique
+    }
+
+    // Formulaire création
     @GetMapping("/new")
     public String showForm(Model model) {
         model.addAttribute("rucher", new Rucher());
         return "ruchers/form";
     }
 
+    // Sauvegarde nouveau rucher
     @PostMapping
     public String saveRucher(@ModelAttribute Rucher rucher, HttpSession session) {
         String apiculteurId = (String) session.getAttribute("uid");
@@ -63,6 +106,7 @@ public class RucherController {
         return "redirect:/ruchers";
     }
 
+    // Formulaire édition
     @GetMapping("/edit/{id}")
     public String editRucher(@PathVariable String id, Model model) throws InterruptedException {
         final Rucher[] rucher = new Rucher[1];
@@ -83,12 +127,15 @@ public class RucherController {
             }
         });
 
-        synchronized (lock) { lock.wait(3000); }
+        synchronized (lock) {
+            lock.wait(3000);
+        }
 
         model.addAttribute("rucher", rucher[0]);
         return "ruchers/form";
     }
 
+    // Mise à jour rucher
     @PostMapping("/update")
     public String updateRucher(@ModelAttribute Rucher rucher, HttpSession session) {
         String apiculteurId = (String) session.getAttribute("uid");
@@ -97,6 +144,7 @@ public class RucherController {
         return "redirect:/ruchers";
     }
 
+    // Suppression rucher
     @GetMapping("/delete/{id}")
     public String deleteRucher(@PathVariable String id) {
         ruchersRef.child(id).removeValueAsync();

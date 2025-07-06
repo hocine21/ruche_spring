@@ -8,6 +8,8 @@ public class Ruche {
     private int nombreCadres;
     private String referenceCapteur;
     private String rucherId;
+    private String apiculteurId;
+    private Boolean alertes; // ou boolean alertes;
 
     public Ruche() {}
 
@@ -32,4 +34,21 @@ public class Ruche {
 
     public String getRucherId() { return rucherId; }
     public void setRucherId(String rucherId) { this.rucherId = rucherId; }
+
+    public String getApiculteurId() { return apiculteurId; }
+    public void setApiculteurId(String apiculteurId) { this.apiculteurId = apiculteurId; }
+
+    // Getter
+    public Boolean getAlertes() {
+        return alertes;
+    }
+
+    // Setter
+    public void setAlertes(Boolean alertes) {
+        this.alertes = alertes;
+    }
+
+    public void setNomRucher(String get) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

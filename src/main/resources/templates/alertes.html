@@ -1,162 +1,70 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alertes Vol - Ruche</title>
-    <link rel="stylesheet" href="alertes.css">
-    <link rel="stylesheet" href="menu.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Gestion des Alertes</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .alerte-active { color: green; font-weight: bold; }
+        .alerte-inactive { color: red; font-weight: bold; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 8px 12px; margin-right: 10px; }
+    </style>
 </head>
 <body>
-    <div class="admin-container">
-        <!-- Le menu sera chargé ici dynamiquement -->
-        <div id="menu-container"></div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Section Alertes -->
-            <div class="section-header">
-                <h2>Alertes Vol</h2>
-                <div class="alert-controls">
-                    <button class="inhibit-alerts-btn" id="inhibitAlertsBtn">
-                        <i class="fa-solid fa-bell-slash"></i> Inhiber les alertes
-                    </button>
-                    <div class="inhibition-status" id="inhibitionStatus">
-                        <span class="status-indicator active"></span>
-                        <span class="status-text">Alertes actives</span>
-                    </div>
-                </div>
-            </div>
+<h1>Gestion des Alertes Ruche</h1>
 
-            <!-- Filtres -->
-            <div class="filters-container">
-                <div class="filters-grid">
-                    <div class="filter-group">
-                        <label>Rucher</label>
-                        <select id="rucherFilter">
-                            <option value="">Tous les ruchers</option>
-                            <option value="1">Rucher Principal</option>
-                            <option value="2">Rucher Secondaire</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Statut</label>
-                        <select id="statusFilter">
-                            <option value="">Tous les statuts</option>
-                            <option value="active">En cours</option>
-                            <option value="resolved">Résolues</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Période</label>
-                        <select id="periodFilter">
-                            <option value="24h">Dernières 24h</option>
-                            <option value="7d">7 derniers jours</option>
-                            <option value="30d">30 derniers jours</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+<p>
+    Alertes actuellement : 
+    <span th:if="${alertesActives}" class="alerte-active">Activées</span>
+    <span th:if="${!alertesActives}" class="alerte-inactive">Désactivées</span>
+</p>
 
-            <!-- Liste des alertes -->
-            <div class="alerts-container">
-                <div class="alerts-list">
-                    <!-- Alerte active -->
-                    <div class="alert-card active">
-                        <div class="alert-header">
-                            <div class="alert-title">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                <h3>Ouverture de ruche détectée</h3>
-                            </div>
-                            <span class="alert-time">Il y a 5 minutes</span>
-                        </div>
-                        <div class="alert-details">
-                            <div class="detail-item">
-                                <i class="fa-solid fa-house-chimney"></i>
-                                <span>Rucher Principal</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fa-solid fa-bee"></i>
-                                <span>Ruche A1</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fa-solid fa-location-dot"></i>
-                                <span>123 Rue des Abeilles, Paris</span>
-                            </div>
-                        </div>
-                        <div class="alert-actions">
-                            <button class="action-btn resolve">
-                                <i class="fa-solid fa-check"></i> Marquer comme résolue
-                            </button>
-                            <button class="action-btn ignore">
-                                <i class="fa-solid fa-xmark"></i> Ignorer
-                            </button>
-                        </div>
-                    </div>
+<form th:action="@{/alertes/verifier}" method="get" style="display:inline-block;">
+    <button type="submit" th:disabled="${!alertesActives}">Vérifier les alertes maintenant</button>
+</form>
 
-                    <!-- Alerte résolue -->
-                    <div class="alert-card resolved">
-                        <div class="alert-header">
-                            <div class="alert-title">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                <h3>Ouverture de ruche détectée</h3>
-                            </div>
-                            <span class="alert-time">Il y a 2 heures</span>
-                        </div>
-                        <div class="alert-details">
-                            <div class="detail-item">
-                                <i class="fa-solid fa-house-chimney"></i>
-                                <span>Rucher Secondaire</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fa-solid fa-bee"></i>
-                                <span>Ruche B2</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fa-solid fa-location-dot"></i>
-                                <span>456 Avenue des Fleurs, Paris</span>
-                            </div>
-                        </div>
-                        <div class="alert-status">
-                            <i class="fa-solid fa-check-circle"></i>
-                            <span>Résolue par John Doe</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<form th:if="${alertesActives}" th:action="@{/alertes/desactiver}" method="post" style="display:inline-block;">
+    <button type="submit">Désactiver les alertes</button>
+</form>
 
-            <!-- Modal d'inhibition -->
-            <div id="inhibitionModal" class="modal">
-                <div class="modal-content">
-                    <button class="close-modal-btn">&times;</button>
-                    <h2>Inhiber les alertes</h2>
-                    <form id="inhibitionForm">
-                        <div class="form-group">
-                            <label>Durée d'inhibition</label>
-                            <select required>
-                                <option value="1">1 heure</option>
-                                <option value="2">2 heures</option>
-                                <option value="4">4 heures</option>
-                                <option value="8">8 heures</option>
-                                <option value="24">24 heures</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Motif</label>
-                            <textarea required placeholder="Raison de l'inhibition des alertes..."></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="submit-btn">Confirmer</button>
-                            <button type="button" class="cancel-btn">Annuler</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </main>
-    </div>
+<form th:if="${!alertesActives}" th:action="@{/alertes/activer}" method="post" style="display:inline-block;">
+    <button type="submit">Activer les alertes</button>
+</form>
 
-    <script src="menu.js"></script>
-    <script src="alertes.js"></script>
+<div th:if="${message}">
+    <p><em th:text="${message}"></em></p>
+</div>
+
+<div th:if="${mesuresAlertes != null and !mesuresAlertes.isEmpty()}">
+    <h2>Mesures déclenchant une alerte :</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Référence Capteur</th>
+                <th>Température</th>
+                <th>Humidité</th>
+                <th>État Couvercle</th>
+                <th>Horodatage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="mesure : ${mesuresAlertes}">
+                <td th:text="${mesure.refCapteur}">REF_CAPTEUR</td>
+                <td th:text="${mesure.temperature}">Temp</td>
+                <td th:text="${mesure.humidite}">Hum</td>
+                <td th:text="${mesure.etatCouvercle}">Couvercle</td>
+                <td th:text="${mesure.horodatage}">Horodatage</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:if="${mesuresAlertes == null or mesuresAlertes.isEmpty()}">
+    <p>Aucune alerte détectée pour le moment.</p>
+</div>
+
 </body>
-</html> 
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ? ${title} + ' - RucheConnect' : 'RucheConnect'">RucheConnect</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/menu.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- CSS spécifique à la page -->
+    <th:block th:replace="${pageCss} ?: ~{}">
+        <!-- CSS spécifique sera injecté ici -->
+    </th:block>
+</head>
+<body>
+    <!-- Menu sidebar -->
+    <div th:replace="~{fragments/menu :: sidebar}">
+        <!-- Le menu sera injecté ici -->
+    </div>
+    
+    <!-- Contenu spécifique de la page -->
+    <div th:replace="${content}">
+        <!-- Le contenu de chaque page sera injecté ici -->
+    </div>
+    
+    <!-- Scripts -->
+    <th:block th:replace="${pageScripts} ?: ~{}">
+        <!-- Scripts spécifiques seront injectés ici -->
+    </th:block>
+</body>
+</html> 

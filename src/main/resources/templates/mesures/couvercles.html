@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>État des Couvercles</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 40px;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f3f3f3;
+        }
+
+        button {
+            padding: 8px 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        a {
+            margin-top: 20px;
+            display: inline-block;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Ruches avec couvercle ouvert</h1>
+
+    <div th:if="${#lists.isEmpty(mesuresOuvertes)}">
+        <p>Aucune ruche avec un couvercle ouvert actuellement.</p>
+    </div>
+
+    <table th:if="${!#lists.isEmpty(mesuresOuvertes)}">
+        <thead>
+        <tr>
+            <th>Capteur</th>
+            <th>Date</th>
+            <th>Température</th>
+            <th>Humidité</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="m : ${mesuresOuvertes}">
+            <td th:text="${m.refCapteur}">ref</td>
+            <td th:text="${m.horodatage}">--</td>
+            <td th:text="${m.temperature + ' °C'}">--</td>
+            <td th:text="${m.humidite + ' %'}">--</td>
+            <td>
+                <form method="post" th:action="@{/mesures/fermer}">
+                    <input type="hidden" name="refCapteur" th:value="${m.refCapteur}">
+                    <button type="submit">Marquer comme fermé</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/mesures}">&larr; Retour aux mesures</a>
+</div>
+<script>
+    setInterval(() => {
+        window.location.reload();
+    }, 1000); // chaque 1000 ms = 1 seconde
+</script>
+
+</body>
+</html>

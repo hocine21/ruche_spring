@@ -185,6 +185,7 @@
             <div class="content-wrapper">
                 <form th:action="${rucher.id == null} ? @{/ruchers} : @{/ruchers/update}" method="post" th:object="${rucher}" class="styled-form">
                     <input type="hidden" th:field="*{id}" />
+                    <input type="hidden" name="alertes" value="false" />
                     <div class="form-group">
                         <input type="text" th:field="*{nom}" required placeholder=" " id="nom" />
                         <label for="nom">Nom :</label>

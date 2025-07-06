@@ -1,0 +1,153 @@
+body {
+    background: linear-gradient(135deg, #fffbe6 0%, #ffe9b3 100%);
+    min-height: 100vh;
+}
+
+.ruches-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    margin: 40px 0;
+}
+
+.ruche-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(243, 156, 18, 0.12), 0 1.5px 8px rgba(191, 169, 0, 0.08);
+    padding: 32px 28px 24px 28px;
+    min-width: 320px;
+    max-width: 350px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2.5px solid #ffe082;
+    overflow: hidden;
+}
+
+.ruche-card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 16px 48px rgba(243, 156, 18, 0.22), 0 3px 16px rgba(191, 169, 0, 0.15);
+    border-color: #ffd54f;
+}
+
+.ruche-card .icon {
+    font-size: 2.8em;
+    color: #fbc02d;
+    background: rgba(255, 193, 7, 0.13);
+    border-radius: 50%;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.08);
+    display: inline-block;
+}
+
+.ruche-card .ruche-title {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #bfa900;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.ruche-card .ruche-info {
+    color: #7f8c8d;
+    font-size: 1.05em;
+    margin-bottom: 10px;
+}
+
+.ruche-card .actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+}
+
+.ruche-card .actions button {
+    background: linear-gradient(90deg, #ffd600 0%, #ff9800 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-weight: 600;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.12);
+}
+
+.ruche-card .actions button:hover {
+    background: linear-gradient(90deg, #ffb300 0%, #ff9800 100%);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.ruche-card .actions .fa-trash {
+    color: #e74c3c;
+}
+
+.ruche-card .actions .fa-pen {
+    color: #bfa900;
+}
+
+/* Formulaire stylé */
+.ruche-form-container {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(243, 156, 18, 0.10);
+    padding: 36px 32px;
+    max-width: 480px;
+    margin: 40px auto;
+    border: 2.5px solid #ffe082;
+}
+
+.ruche-form-container h2 {
+    color: #bfa900;
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.ruche-form-container label {
+    font-weight: 600;
+    color: #bfa900;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.ruche-form-container input,
+.ruche-form-container select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid #ffe082;
+    background: #fffde7;
+    margin-bottom: 18px;
+    font-size: 1em;
+    transition: border 0.2s;
+}
+
+.ruche-form-container input:focus,
+.ruche-form-container select:focus {
+    border-color: #fbc02d;
+    outline: none;
+    background: #fffde4;
+}
+
+.ruche-form-container button[type='submit'] {
+    width: 100%;
+    background: linear-gradient(90deg, #ffd600 0%, #ff9800 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 0;
+    font-weight: 700;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.12);
+    transition: background 0.2s, transform 0.2s;
+}
+
+.ruche-form-container button[type='submit']:hover {
+    background: linear-gradient(90deg, #ffb300 0%, #ff9800 100%);
+    transform: translateY(-2px) scale(1.03);
+}

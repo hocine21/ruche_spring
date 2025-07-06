@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -8,7 +9,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <style>
+        @keyframes beeFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(5deg); }
+        }
+        
+        #rucheId:hover {
+            border-color: #bfa900;
+            box-shadow: 0 6px 16px rgba(255, 215, 0, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        #rucheId:focus {
+            border-color: #bfa900;
+            box-shadow: 0 0 0 3px rgba(191, 169, 0, 0.15);
+            background-color: #fffde7;
+        }
+        
+        #rucheId option {
+            background: #fff;
+            color: #333;
+            padding: 8px;
+        }
+        
+        #rucheId option:hover {
+            background: #fffde7;
+        }
+    </style>
 </head>
 <body>
     <div class="admin-container">
@@ -327,60 +358,122 @@
                 </div>
             </div>
 
-            <div class="dashboard-content" id="dashboard-section">
-                <!-- Overview Cards -->
-                <div class="overview-cards">
-                    <div class="card">
-                        <div class="card-icon temperature">
-                            <i class="fa-solid fa-temperature-three-quarters"></i>
+            
+                <div class="dashboard-content" id="dashboard-section"> 
+                    <!-- Dropdown pour choisir la ruche -->
+                    <form method="get" th:action="@{/admin}">
+                        <label for="rucheId" style="
+                            display: block;
+                            font-weight: 700;
+                            font-size: 1.2rem;
+                            color: #bfa900;
+                            margin-bottom: 12px;
+                            text-align: center;
+                            letter-spacing: 0.8px;
+                            text-shadow: 0 2px 8px rgba(191, 169, 0, 0.15);
+                            position: relative;
+                            padding: 8px 0;
+                        ">
+                            <i class="fa-solid fa-bee" style="
+                                margin-right: 10px;
+                                color: #ffd700;
+                                font-size: 1.3em;
+                                animation: beeFloat 2s ease-in-out infinite;
+                            "></i>
+                            Choisir une ruche
+                        </label>
+                        <select name="rucheId" id="rucheId" onchange="this.form.submit()" style="
+                            width: 100%;
+                            max-width: 300px;
+                            margin: 0 auto;
+                            display: block;
+                            padding: 12px 16px;
+                            border: 2px solid #ffd700;
+                            border-radius: 12px;
+                            background: #fff;
+                            font-size: 1rem;
+                            color: #333;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-family: inherit;
+                            outline: none;
+                            appearance: none;
+                            background-image: url('data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22%3e%3cpath stroke=%22%23bfa900%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%221.5%22 d=%22m6 8 4 4 4-4%22/%3e%3c/svg%3e');
+                            background-repeat: no-repeat;
+                            background-position: right 12px center;
+                            background-size: 16px;
+                            padding-right: 40px;
+                            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.1);
+                        ">
+                            <option value="">-- Sélectionner --</option>
+                            <option th:each="r : ${ruches}"
+                                    th:value="${r.id}"
+                                    th:text="${r.nom}"
+                                    th:selected="${r.id == rucheIdSelected}">
+                            </option>
+                        </select>
+                    </form>
+                
+                    <!-- Overview Cards TOUJOURS affichées -->
+                    <div class="overview-cards">
+                        <!-- Température -->
+                        <div class="card">
+                            <div class="card-icon temperature">
+                                <i class="fa-solid fa-temperature-three-quarters"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3>Température moyenne</h3>
+                                <p class="value"
+                                   th:text="${derniereMesure != null && derniereMesure.temperature != null} ? ${derniereMesure.temperature} + ' °C' : '--'">--</p>
+                                <p class="trend positive"
+                                   th:text="${derniereMesure != null && derniereMesure.horodatage != null} ? 'Mesurée à ' + ${derniereMesure.horodatage} : '--'">--</p>
+                            </div>
                         </div>
-                        <div class="card-info">
-                            <h3>Température moyenne</h3>
-                            <p class="value">24.5°C</p>
-                            <p class="trend positive">+2.3°C</p>
+                
+                        <!-- Humidité -->
+                        <div class="card">
+                            <div class="card-icon humidity">
+                                <i class="fa-solid fa-droplet"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3>Humidité</h3>
+                                <p class="value"
+                                   th:text="${derniereMesure != null && derniereMesure.humidite != null} ? ${derniereMesure.humidite} + ' %' : '--'">--</p>
+                                <p class="trend negative"
+                                   th:text="${derniereMesure != null && derniereMesure.horodatage != null} ? 'Mesurée à ' + ${derniereMesure.horodatage} : '--'">--</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-icon humidity">
-                            <i class="fa-solid fa-droplet"></i>
+                
+                        <!-- Couvercle -->
+                        <div class="card">
+                            <div class="card-icon activity">
+                                <i class="fa-solid fa-bee"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3>État Couvercle</h3>
+                                <p class="value"
+                                   th:text="${derniereMesure != null && derniereMesure.etatCouvercle != null} ? ${derniereMesure.etatCouvercle} : '--'">--</p>
+                                <p class="trend neutral"
+                                   th:text="${derniereMesure != null && derniereMesure.horodatage != null} ? 'Mesurée à ' + ${derniereMesure.horodatage} : '--'">--</p>
+                            </div>
                         </div>
-                        <div class="card-info">
-                            <h3>Humidité</h3>
-                            <p class="value">65%</p>
-                            <p class="trend negative">-5%</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-icon activity">
-                            <i class="fa-solid fa-bee"></i>
-                        </div>
-                        <div class="card-info">
-                            <h3>Activité</h3>
-                            <p class="value">Normal</p>
-                            <p class="trend neutral">Stable</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-icon alerts">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <div class="card-info">
-                            <h3>Alertes</h3>
-                            <p class="value">3</p>
-                            <p class="trend negative">Nouvelles</p>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Charts Section -->
-                <div class="charts-section">
-                    <div class="chart-container">
-                        <h3>Température et Humidité</h3>
-                        <canvas id="tempHumidityChart"></canvas>
+                        <!-- Alertes (exemple statique, à adapter si tu as des alertes dynamiques) -->
+                        <div class="card">
+                            <div class="card-icon alerts">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3>Alertes</h3>
+                                <p class="value">--</p>
+                                <p class="trend negative">--</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="chart-container">
-                        <h3>Activité des ruches</h3>
-                        <canvas id="activityChart"></canvas>
+                
+                    <!-- Message si aucune mesure -->
+                    <div th:if="${derniereMesure == null and rucheIdSelected != null}">
+                        <p style="color: red;">Aucune mesure trouvée pour cette ruche.</p>
                     </div>
                 </div>
 
@@ -388,35 +481,38 @@
                 <div class="map-alerts-section">
                     <div class="map-container">
                         <h3>Localisation des ruches</h3>
-                        <div id="map"></div>
+                        <div id="map" style="height: 350px; margin-top: 24px; border-radius: 12px; overflow: hidden;"></div>
                     </div>
                     <div class="alerts-container">
-                        <h3>Alertes récentes</h3>
-                        <div class="alerts-list">
-                            <div class="alert-item warning">
-                                <i class="fa-solid fa-temperature-high"></i>
-                                <div class="alert-content">
-                                    <h4>Température élevée</h4>
-                                    <p>Ruche #3 - Il y a 5 minutes</p>
+                        <div class="alerts-container">
+                            <h3>Conseils du jour</h3>
+                            <div class="alerts-list">
+                                <div class="alert-item info">
+                                    <i class="fa-solid fa-leaf"></i>
+                                    <div class="alert-content">
+                                        <h4>Plantez des fleurs mellifères</h4>
+                                        <p>Favorisez la biodiversité autour de vos ruches.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="alert-item info">
-                                <i class="fa-solid fa-bee"></i>
-                                <div class="alert-content">
-                                    <h4>Mouvement détecté</h4>
-                                    <p>Ruche #1 - Il y a 15 minutes</p>
+                                <div class="alert-item warning">
+                                    <i class="fa-solid fa-calendar-check"></i>
+                                    <div class="alert-content">
+                                        <h4>Contrôlez vos cadres</h4>
+                                        <p>Pensez à inspecter les cadres toutes les 2 semaines.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="alert-item warning">
-                                <i class="fa-solid fa-droplet-slash"></i>
-                                <div class="alert-content">
-                                    <h4>Humidité basse</h4>
-                                    <p>Ruche #2 - Il y a 30 minutes</p>
+                                <div class="alert-item info">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <div class="alert-content">
+                                        <h4>Saviez-vous ?</h4>
+                                        <p>Une abeille visite environ 1 000 fleurs par jour !</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                        
+</div>
+
             </div>
 
             <!-- Section Mesures -->
@@ -643,7 +739,189 @@
         </main>
     </div>
 
-    <script th:src="@{/js/beekeepers.js}"></script>
-    <script th:src="@{/js/admin.js}"></script>
+    <!-- Firebase + Leaflet + Script -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+    <script>
+      // Config Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyA2XMx0mSXYYUP2ISfYqXWVzppA39cDymc",
+        authDomain: "rucheconnect-d9225.firebaseapp.com",
+        databaseURL: "https://rucheconnect-d9225-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "rucheconnect-d9225",
+        storageBucket: "rucheconnect-d9225.appspot.com",
+        messagingSenderId: "619265212498",
+        appId: "1:619265212498:web:347199f2c1826dbc4e9f8b",
+        measurementId: "G-CWVVTE31DS"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      // Initialisation de la carte
+      var map = L.map('map').setView([48.8584, 2.2945], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Icône personnalisée
+      var rucheIcon = L.icon({
+          iconUrl: 'images/beehive_6986741.png',
+          iconSize: [38, 38],
+          iconAnchor: [19, 38],
+          popupAnchor: [0, -38]
+      });
+
+      // Cluster group
+      var markers = L.markerClusterGroup({
+          iconCreateFunction: function(cluster) {
+              // Affiche le nombre de ruches dans le cluster
+              return L.divIcon({
+                  html: `<div style="position:relative;">
+                            <img src="images/beehive_6986741.png" style="width:38px;height:38px;">
+                            <span style="position:absolute;top:0;right:0;background:#ffd700;color:#222;font-weight:bold;border-radius:50%;padding:2px 7px;font-size:1em;">${cluster.getChildCount()}</span>
+                         </div>`,
+                  className: 'custom-cluster-icon',
+                  iconSize: [38, 38]
+              });
+          },
+          spiderfyOnMaxZoom: true, // éclatement des ruches sur le même point
+          showCoverageOnHover: false,
+          maxClusterRadius: 60 // ajuste si besoin
+      });
+
+      // Fonction pour géocoder une adresse
+      function geocodeAdresse(adresse, callback) {
+          if (!adresse) {
+              callback(null);
+              return;
+          }
+          var url = "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(adresse);
+          fetch(url)
+              .then(response => response.json())
+              .then(data => {
+                  if (data && data.length > 0) {
+                      callback({
+                          lat: parseFloat(data[0].lat),
+                          lon: parseFloat(data[0].lon)
+                      });
+                  } else {
+                      callback(null);
+                  }
+              })
+              .catch(() => callback(null));
+      }
+
+      // Récupère l'utilisateur connecté (Firebase Auth)
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          const userId = user.uid;
+
+          // Récupère ruchers, ruches, mesures pour cet utilisateur
+          Promise.all([
+            db.ref('ruchers').orderByChild('apiculteurId').equalTo(userId).once('value'),
+            db.ref('ruches').once('value'),
+            db.ref('mesures').once('value')
+          ]).then(([ruchersSnap, ruchesSnap, mesuresSnap]) => {
+            // --- Ruchers ---
+            const ruchers = {};
+            ruchersSnap.forEach(child => {
+              const val = child.val();
+              val.id = child.key;
+              ruchers[val.id] = val;
+            });
+
+            // --- Ruches ---
+            const ruches = [];
+            ruchesSnap.forEach(child => {
+              const val = child.val();
+              val.id = child.key;
+              ruches.push(val);
+            });
+
+            // --- Mesures ---
+            const mesures = [];
+            mesuresSnap.forEach(child => {
+              const val = child.val();
+              val.id = child.key;
+              mesures.push(val);
+            });
+
+            // Grouper les ruches par rucherId
+            const ruchesParRucher = {};
+            ruches.forEach(ruche => {
+              if (ruche.rucherId && ruchers[ruche.rucherId]) {
+                if (!ruchesParRucher[ruche.rucherId]) ruchesParRucher[ruche.rucherId] = [];
+                ruchesParRucher[ruche.rucherId].push(ruche);
+              }
+            });
+
+            let bounds = [];
+            let geocoded = 0;
+            const rucherIds = Object.keys(ruchers);
+
+            rucherIds.forEach(rucherId => {
+              const rucher = ruchers[rucherId];
+              geocodeAdresse(rucher.adresse, function(coords) {
+                geocoded++;
+                if (coords) {
+                  const ruchesDuRucher = ruchesParRucher[rucherId] || [];
+                  // Décalage pour chaque ruche du même rucher (pour spiderfy)
+                  const angleStep = (2 * Math.PI) / Math.max(ruchesDuRucher.length, 1);
+                  const radius = 0.0008; // ~80m
+
+                  ruchesDuRucher.forEach((ruche, idx) => {
+                    const angle = idx * angleStep;
+                    const latOffset = Math.cos(angle) * radius;
+                    const lonOffset = Math.sin(angle) * radius;
+                    const lat = coords.lat + latOffset;
+                    const lon = coords.lon + lonOffset;
+
+                    // Dernière mesure pour cette ruche
+                    const mesuresRuche = mesures.filter(m => m.refCapteur === ruche.referenceCapteur && m.horodatage);
+                    let derniere = null;
+                    if (mesuresRuche.length > 0) {
+                      mesuresRuche.sort((a, b) => (b.horodatage || '').localeCompare(a.horodatage || ''));
+                      derniere = mesuresRuche[mesuresRuche.length - 1];
+                    }
+
+                    let popupContent = `<b>Ruche :</b> ${ruche.nom}<br>`;
+                    popupContent += `<b>Adresse :</b> ${rucher.adresse}<br>`;
+                    if (derniere) {
+                      popupContent += `
+                        Temp: ${derniere.temperature ?? '-'}°C<br>
+                        Humidité: ${derniere.humidite ?? '-'}%<br>
+                        Couvercle: ${derniere.etatCouvercle ?? '-'}<br>
+                        Date: ${derniere.horodatage ?? '-'}<br>
+                      `;
+                    } else {
+                      popupContent += `<i>Aucune mesure</i>`;
+                    }
+
+                    var marker = L.marker([lat, lon], {icon: rucheIcon}).bindPopup(popupContent);
+                    markers.addLayer(marker);
+                    bounds.push([lat, lon]);
+                  });
+                }
+                if (geocoded === rucherIds.length && bounds.length > 0) {
+                  map.addLayer(markers);
+                  map.fitBounds(bounds, {padding: [30, 30]});
+                }
+              });
+            });
+          });
+        } else {
+          alert("Vous devez être connecté pour voir vos ruches sur la carte.");
+        }
+      });
+
+      db.ref('mesures').on('value', (mesuresSnap) => {
+        // ... (mets à jour la variable mesures et relance le code d'affichage des markers)
+      });
+
+    </script>
 </body>
 </html>

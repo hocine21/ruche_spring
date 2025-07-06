@@ -32,4 +32,12 @@ public class Mesure {
 
     public String getRefCapteur() { return refCapteur; }
     public void setRefCapteur(String refCapteur) { this.refCapteur = refCapteur; }
+
+    public void setId(String key) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public Object getId() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

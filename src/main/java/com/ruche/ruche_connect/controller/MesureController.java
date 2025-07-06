@@ -1,8 +1,10 @@
 package com.ruche.ruche_connect.controller;
 
 import com.google.firebase.database.*;
+import com.ruche.ruche_connect.model.Intervention;
 import com.ruche.ruche_connect.model.Mesure;
 import com.ruche.ruche_connect.model.Ruche;
+import com.ruche.ruche_connect.service.EmailService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,70 +20,84 @@ public class MesureController {
     private final DatabaseReference ruchesRef = FirebaseDatabase.getInstance().getReference("ruches");
     private final DatabaseReference ruchersRef = FirebaseDatabase.getInstance().getReference("ruchers");
     private final DatabaseReference mesuresRef = FirebaseDatabase.getInstance().getReference("mesures");
+    private final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
+    private final DatabaseReference interventionsRef = FirebaseDatabase.getInstance().getReference("interventions");
 
+    private final EmailService emailService;
+    private final Set<String> capteursNotifies = new HashSet<>();
+
+    public MesureController(EmailService emailService) {
+        this.emailService = emailService;
+    }
+
+    // --- AFFICHER MESURES ---
     @GetMapping
-    public String afficherMesures(
-            @RequestParam(value = "rucheId", required = false) String rucheId,
-            HttpSession session,
-            Model model
-    ) throws InterruptedException {
+    public String afficherMesures(@RequestParam(value = "rucheId", required = false) String rucheId,
+                                  HttpSession session, Model model) throws InterruptedException {
+
         if (session.getAttribute("uid") == null) return "redirect:/login";
         String uid = (String) session.getAttribute("uid");
 
-        List<Ruche> ruchesUtilisateur = new ArrayList<>();
-        final Object lock = new Object();
+        Set<String> rucherIds = new HashSet<>();
+        final Object lock1 = new Object();
 
-        // Charger toutes les ruches appartenant à l'utilisateur
-        ruchesRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            public void onDataChange(DataSnapshot ruchesSnapshot) {
-                for (DataSnapshot rucheNode : ruchesSnapshot.getChildren()) {
-                    Ruche ruche = rucheNode.getValue(Ruche.class);
-                    if (ruche != null && ruche.getRucherId() != null) {
-                        ruchersRef.child(ruche.getRucherId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                            public void onDataChange(DataSnapshot rucherSnapshot) {
-                                String apiculteurId = rucherSnapshot.child("apiculteurId").getValue(String.class);
-                                if (uid.equals(apiculteurId)) {
-                                    ruchesUtilisateur.add(ruche);
-                                }
-                                synchronized (lock) { lock.notify(); }
-                            }
-
-                            public void onCancelled(DatabaseError error) {
-                                synchronized (lock) { lock.notify(); }
-                            }
-                        });
+        ruchersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot rucher : snapshot.getChildren()) {
+                    String apiculteurId = rucher.child("apiculteurId").getValue(String.class);
+                    if (uid.equals(apiculteurId)) {
+                        rucherIds.add(rucher.getKey());
                     }
                 }
+                synchronized (lock1) { lock1.notify(); }
             }
-
             public void onCancelled(DatabaseError error) {
-                synchronized (lock) { lock.notify(); }
+                synchronized (lock1) { lock1.notify(); }
             }
         });
+        synchronized (lock1) { lock1.wait(2000); }
 
-        synchronized (lock) { lock.wait(2000); }
+        List<Ruche> ruchesUtilisateur = new ArrayList<>();
+        final Object lock2 = new Object();
+
+        ruchesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot rucheSnap : snapshot.getChildren()) {
+                    Ruche ruche = rucheSnap.getValue(Ruche.class);
+                    if (ruche != null && rucherIds.contains(ruche.getRucherId())) {
+                        ruchesUtilisateur.add(ruche);
+                    }
+                }
+                synchronized (lock2) { lock2.notify(); }
+            }
+            public void onCancelled(DatabaseError error) {
+                synchronized (lock2) { lock2.notify(); }
+            }
+        });
+        synchronized (lock2) { lock2.wait(2000); }
 
         model.addAttribute("ruches", ruchesUtilisateur);
         model.addAttribute("rucheIdSelected", rucheId);
 
         if (rucheId != null && !rucheId.isBlank()) {
-            return getMesuresByRuche(rucheId, session, model);
+            return getMesuresByRuche(rucheId, model);
         }
 
+        model.addAttribute("derniereMesure", null);
+        model.addAttribute("mesures", Collections.emptyList());
         return "mesures";
     }
 
-    public String getMesuresByRuche(String rucheId, HttpSession session, Model model) throws InterruptedException {
+    // --- MESURES PAR RUCHE ---
+    public String getMesuresByRuche(String rucheId, Model model) throws InterruptedException {
         final String[] refCapteur = new String[1];
         final Object lock1 = new Object();
 
-        // Obtenir capteur lié à la ruche
         ruchesRef.child(rucheId).addListenerForSingleValueEvent(new ValueEventListener() {
             public void onDataChange(DataSnapshot snapshot) {
                 refCapteur[0] = snapshot.child("referenceCapteur").getValue(String.class);
                 synchronized (lock1) { lock1.notify(); }
             }
-
             public void onCancelled(DatabaseError error) {
                 synchronized (lock1) { lock1.notify(); }
             }
@@ -91,27 +107,23 @@ public class MesureController {
 
         if (refCapteur[0] == null) {
             model.addAttribute("derniereMesure", null);
-            model.addAttribute("mesures", new ArrayList<>());
+            model.addAttribute("mesures", Collections.emptyList());
             return "mesures";
         }
 
-        final List<Mesure> mesures = new ArrayList<>();
+        List<Mesure> mesures = new ArrayList<>();
         final Object lock2 = new Object();
 
-        // Récupérer toutes les mesures du capteur
         mesuresRef.addListenerForSingleValueEvent(new ValueEventListener() {
             public void onDataChange(DataSnapshot snapshot) {
-                for (DataSnapshot mNode : snapshot.getChildren()) {
-                    if (mNode.hasChild("refCapteur")) {
-                        Mesure m = mNode.getValue(Mesure.class);
-                        if (refCapteur[0].equals(m.getRefCapteur())) {
-                            mesures.add(m);
-                        }
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    Mesure m = snap.getValue(Mesure.class);
+                    if (m != null && refCapteur[0].equals(m.getRefCapteur())) {
+                        mesures.add(m);
                     }
                 }
                 synchronized (lock2) { lock2.notify(); }
             }
-
             public void onCancelled(DatabaseError error) {
                 synchronized (lock2) { lock2.notify(); }
             }
@@ -122,17 +134,107 @@ public class MesureController {
         mesures.sort((m1, m2) -> {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date d1 = sdf.parse(m1.getHorodatage());
-                Date d2 = sdf.parse(m2.getHorodatage());
-                return d2.compareTo(d1);
-            } catch (Exception e) {
-                return 0;
-            }
+                return sdf.parse(m2.getHorodatage()).compareTo(sdf.parse(m1.getHorodatage()));
+            } catch (Exception e) { return 0; }
         });
 
         Mesure derniere = mesures.isEmpty() ? null : mesures.get(0);
-        model.addAttribute("mesures", mesures);
         model.addAttribute("derniereMesure", derniere);
+        model.addAttribute("mesures", mesures);
+
+        if (derniere != null && "OUVERT".equalsIgnoreCase(derniere.getEtatCouvercle())) {
+            notifierOuverture(rucheId, refCapteur[0]);
+        }
+
         return "mesures";
+    }
+
+    // --- RUCHES OUVERTES ---
+    @GetMapping("/couvercles")
+    public String ruchesOuvertes(Model model) throws InterruptedException {
+        List<Mesure> ouvertes = new ArrayList<>();
+        final Object lock = new Object();
+
+        mesuresRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    Mesure m = snap.getValue(Mesure.class);
+                    if (m != null && "OUVERT".equalsIgnoreCase(m.getEtatCouvercle())) {
+                        ouvertes.add(m);
+                    }
+                }
+                synchronized (lock) { lock.notify(); }
+            }
+            public void onCancelled(DatabaseError error) {
+                synchronized (lock) { lock.notify(); }
+            }
+        });
+
+        synchronized (lock) { lock.wait(2000); }
+
+        model.addAttribute("mesuresOuvertes", ouvertes);
+        return "mesures/couvercles";
+    }
+
+    // --- FERMER COUVERCLE ---
+    @PostMapping("/fermer")
+    public String fermerCouvercle(@RequestParam String refCapteur) throws InterruptedException {
+        final Object lock = new Object();
+
+        mesuresRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    Mesure m = snap.getValue(Mesure.class);
+                    if (m != null && refCapteur.equals(m.getRefCapteur()) &&
+                        "OUVERT".equalsIgnoreCase(m.getEtatCouvercle())) {
+                        snap.getRef().child("etatCouvercle").setValueAsync("FERME");
+                        capteursNotifies.remove(refCapteur);
+                    }
+                }
+                synchronized (lock) { lock.notify(); }
+            }
+            public void onCancelled(DatabaseError error) {
+                synchronized (lock) { lock.notify(); }
+            }
+        });
+
+        synchronized (lock) { lock.wait(2000); }
+        return "redirect:/mesures/couvercles";
+    }
+
+    // --- NOTIFIER OUVERTURE ---
+    private void notifierOuverture(String rucheId, String refCapteur) {
+        if (capteursNotifies.contains(refCapteur)) return;
+
+        ruchesRef.child(rucheId).addListenerForSingleValueEvent(new ValueEventListener() {
+            public void onDataChange(DataSnapshot rucheSnap) {
+                String rucherId = rucheSnap.child("rucherId").getValue(String.class);
+                if (rucherId != null) {
+                    ruchersRef.child(rucherId).addListenerForSingleValueEvent(new ValueEventListener() {
+                        public void onDataChange(DataSnapshot rucherSnap) {
+                            String uid = rucherSnap.child("apiculteurId").getValue(String.class);
+                            if (uid != null) {
+                                usersRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    public void onDataChange(DataSnapshot userSnap) {
+                                        String email = userSnap.child("email").getValue(String.class);
+                                        if (email != null && !email.isBlank()) {
+                                            emailService.envoyer(
+                                                    email,
+                                                    "🚨 Alerte : Ruche ouverte",
+                                                    "Votre ruche (ID : " + rucheId + ") a été détectée OUVERTE. Merci de vérifier immédiatement."
+                                            );
+                                            capteursNotifies.add(refCapteur);
+                                        }
+                                    }
+                                    public void onCancelled(DatabaseError error) {}
+                                });
+                            }
+                        }
+                        public void onCancelled(DatabaseError error) {}
+                    });
+                }
+            }
+            public void onCancelled(DatabaseError error) {}
+        });
     }
 }

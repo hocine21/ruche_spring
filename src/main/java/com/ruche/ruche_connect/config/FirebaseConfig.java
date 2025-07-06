@@ -14,7 +14,7 @@ public class FirebaseConfig {
     @PostConstruct
     public void initFirebase() throws Exception {
         FileInputStream serviceAccount =
-                new FileInputStream("src/main/resources/rucheconnect-d9225-firebase-adminsdk-fbsvc-1fd4901793.json");
+                new FileInputStream("src/main/resources/rucheconnect-d9225-firebase-adminsdk-fbsvc-0ff0dd6491.json");
 
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))

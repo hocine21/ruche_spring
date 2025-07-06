@@ -21,9 +21,13 @@
         <option th:each="r : ${ruchers}" th:value="${r.id}" th:text="${r.nom}"></option>
     </select><br/>
 
-    <!-- Ne pas afficher le capteur -->
+    <label>Capteur :</label>
+    <select th:field="*{referenceCapteur}">
+        <option th:each="c : ${capteursDispos}" th:value="${c}" th:text="${c}"></option>
+    </select><br/>
 
     <button type="submit">Enregistrer</button>
 </form>
 </body>
 </html>
+
