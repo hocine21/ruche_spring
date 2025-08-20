@@ -51,6 +51,8 @@ jobs:
     # 4. Lancer les tests unitaires
     - name: Run tests
       run: mvn test
+    - name: Générer rapport tests JUnit
+      run: mvn surefire-report:report
 
     # 5. (Optionnel) Build l’image Docker si tu veux tester Docker
     # - name: Build Docker image
