@@ -11,6 +11,11 @@
 	<groupId>com.ruche</groupId>
 	<artifactId>ruche_connect</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<modules>
+		<module>test</module>
+		<module>demo</module>
+	</modules>
 	<name>ruche_connect</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>

@@ -13,9 +13,17 @@ import java.util.*;
 @RequestMapping("/ruches")
 public class RucheController {
 
-    private final DatabaseReference ruchesRef = FirebaseDatabase.getInstance().getReference("ruches");
-    private final DatabaseReference ruchersRef = FirebaseDatabase.getInstance().getReference("ruchers");
-    private final DatabaseReference mesuresRef = FirebaseDatabase.getInstance().getReference("mesures");
+    private final DatabaseReference ruchesRef;
+    private final DatabaseReference ruchersRef;
+    private final DatabaseReference mesuresRef;
+
+    public RucheController(DatabaseReference ruchesRef,
+                           DatabaseReference ruchersRef,
+                           DatabaseReference mesuresRef) {
+        this.ruchesRef = ruchesRef;
+        this.ruchersRef = ruchersRef;
+        this.mesuresRef = mesuresRef;
+    }
 
     private boolean isUserConnected(HttpSession session) {
         return session.getAttribute("uid") != null;
