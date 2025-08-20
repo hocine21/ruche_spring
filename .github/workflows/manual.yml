@@ -32,10 +32,10 @@ jobs:
       run: mvn clean package
 
     - name: Créer le fichier recheconnectFirebase.json
-      run: echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/recheconnectFirebase.json
+      run: echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/rucheconnectFirebase.json
 
     - name: Exporter la variable d'environnement
-      run: echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/recheconnectFirebase.json" >> $GITHUB_ENV
+      run: echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/rucheconnectFirebase.json" >> $GITHUB_ENV
 
     - name: Lancer les tests (avec Firebase creds)
       run: mvn test
