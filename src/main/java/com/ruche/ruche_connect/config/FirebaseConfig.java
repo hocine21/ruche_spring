@@ -1,5 +1,6 @@
 package com.ruche.ruche_connect.config;
 
+import com.google.api.client.util.Value;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -19,27 +20,36 @@ import java.io.InputStream;
 public class FirebaseConfig {
 
 
-    @PostConstruct
-    public void initFirebase() throws Exception {
-        InputStream serviceAccount = getClass()
-        .getClassLoader()
-        .getResourceAsStream("rucheconnectFireBase.json");
+	@Value("${firebase.credentials.path:#{null}}")
+	private String firebaseCredentialsPath;
 
-        
-        System.out.println("Classpath: " + System.getProperty("java.class.path"));
-        System.out.println("Recherche rucheconnectFireBase.json dans le classpath...");
-        
-        if (serviceAccount == null) {
-            throw new FileNotFoundException("Fichier Firebase introuvable dans les ressources !");
+    @SuppressWarnings("resource")
+	@PostConstruct
+    public void initFirebase() throws Exception {
+    	// fallback sur variable d'environnement si @Value n'a pas injecté de valeur
+        if (firebaseCredentialsPath == null) {
+        	System.out.println("fallback active");
+            firebaseCredentialsPath = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
         }
 
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl("https://rucheconnect-d9225-default-rtdb.europe-west1.firebasedatabase.app")
-                .build();
+        if (firebaseCredentialsPath == null) {
+            throw new IllegalStateException(
+                "Le chemin du fichier Firebase n'est pas défini ! " +
+                "Définissez firebase.credentials.path dans application.properties ou GOOGLE_APPLICATION_CREDENTIALS."
+            );
+        }
 
-        if (FirebaseApp.getApps().isEmpty()) {
-            FirebaseApp.initializeApp(options);
+        System.out.println("Firebase JSON path: " + firebaseCredentialsPath);
+
+        try (FileInputStream serviceAccount = new FileInputStream(firebaseCredentialsPath)) {
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setDatabaseUrl("https://rucheconnect-d9225-default-rtdb.europe-west1.firebasedatabase.app")
+                    .build();
+
+            if (FirebaseApp.getApps().isEmpty()) {
+                FirebaseApp.initializeApp(options);
+            }
         }
     }
     

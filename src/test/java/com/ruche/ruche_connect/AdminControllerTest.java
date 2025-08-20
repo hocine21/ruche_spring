@@ -39,7 +39,7 @@ public class AdminControllerTest {
     private Model model;
 
     @MockBean
-    @Qualifier("dbRef")
+    @Qualifier("ruchersRef")
     private DatabaseReference dbRef; // Firebase mocké
 
     private Set<String> alertesDesactivees;
