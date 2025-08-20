@@ -9,6 +9,7 @@ import com.ruche.ruche_connect.model.Apiculteur;
 import com.ruche.ruche_connect.service.EmailService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,11 @@ import com.google.firebase.auth.UserRecord.CreateRequest;
 @RequestMapping("/apiculteurs")
 public class ApiculteurController {
 
-    private final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
+	private final DatabaseReference usersRef;
+
+    public ApiculteurController(@Qualifier("usersRef") DatabaseReference userRef) {
+        this.usersRef = userRef;
+    }
 
     @Autowired
     private EmailService emailService;

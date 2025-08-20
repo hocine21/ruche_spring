@@ -6,6 +6,8 @@ import com.ruche.ruche_connect.model.Mesure;
 import com.ruche.ruche_connect.model.Ruche;
 import com.ruche.ruche_connect.service.EmailService;
 import jakarta.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,17 +19,28 @@ import java.util.*;
 @RequestMapping("/mesures")
 public class MesureController {
 
-    private final DatabaseReference ruchesRef = FirebaseDatabase.getInstance().getReference("ruches");
-    private final DatabaseReference ruchersRef = FirebaseDatabase.getInstance().getReference("ruchers");
-    private final DatabaseReference mesuresRef = FirebaseDatabase.getInstance().getReference("mesures");
-    private final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
-    private final DatabaseReference interventionsRef = FirebaseDatabase.getInstance().getReference("interventions");
-
+    private final DatabaseReference ruchesRef;
+    private final DatabaseReference ruchersRef;
+    private final DatabaseReference mesuresRef;
+    private final DatabaseReference usersRef;
+    private final DatabaseReference interventionsRef;
     private final EmailService emailService;
     private final Set<String> capteursNotifies = new HashSet<>();
 
-    public MesureController(EmailService emailService) {
+    public MesureController(
+        EmailService emailService,
+        @Qualifier("ruchesRef") DatabaseReference ruchesRef,
+        @Qualifier("ruchersRef") DatabaseReference ruchersRef,
+        @Qualifier("mesuresRef") DatabaseReference mesuresRef,
+        @Qualifier("usersRef") DatabaseReference usersRef,
+        @Qualifier("interventionsRef") DatabaseReference interventionsRef
+    ) {
         this.emailService = emailService;
+        this.ruchesRef = ruchesRef;
+        this.ruchersRef = ruchersRef;
+        this.mesuresRef = mesuresRef;
+        this.usersRef = usersRef;
+        this.interventionsRef = interventionsRef;
     }
 
     // --- AFFICHER MESURES ---

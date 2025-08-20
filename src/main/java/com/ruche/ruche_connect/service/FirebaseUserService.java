@@ -3,6 +3,8 @@ package com.ruche.ruche_connect.service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.database.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -67,4 +69,11 @@ public class FirebaseUserService {
 
         return role[0];
     }
+
+    public void getRestTemplate() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRestTemplate'");
+    }
+
+
 }
