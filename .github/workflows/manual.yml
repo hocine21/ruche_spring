@@ -31,6 +31,15 @@ jobs:
     - name: Build with Maven
       run: mvn clean package
 
+    - name: Créer le fichier recheconnectFirebase.json
+      run: echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/recheconnectFirebase.json
+
+    - name: Exporter la variable d'environnement
+      run: echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/recheconnectFirebase.json" >> $GITHUB_ENV
+
+    - name: Lancer les tests (avec Firebase creds)
+      run: mvn test
+
     # 4. Lancer les tests unitaires
     - name: Run tests
       run: mvn test
