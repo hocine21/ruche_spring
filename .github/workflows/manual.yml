@@ -1,0 +1,40 @@
+name: CI/CD - Docker Branch Test
+
+# Déclenchement manuel
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'Docker'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Récupérer le code depuis la branche choisie
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ inputs.branch }}
+
+    # 2. Installer Java (17 par exemple)
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    # 3. Build le projet avec Maven
+    - name: Build with Maven
+      run: mvn clean package
+
+    # 4. Lancer les tests unitaires
+    - name: Run tests
+      run: mvn test
+
+    # 5. (Optionnel) Build l’image Docker si tu veux tester Docker
+    # - name: Build Docker image
+    #   run: docker build -t myapp:latest .
