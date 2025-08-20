@@ -39,7 +39,15 @@ jobs:
 
     - name: Lancer les tests (avec Firebase creds)
       run: mvn test
-
+    - name: Vérifier que la variable GOOGLE_APPLICATION_CREDENTIALS est bien définie
+      run: |
+        if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+          echo "❌ La variable GOOGLE_APPLICATION_CREDENTIALS n'est PAS définie !"
+          exit 1
+        else
+          echo "✅ GOOGLE_APPLICATION_CREDENTIALS est définie : $GOOGLE_APPLICATION_CREDENTIALS"
+        fi
+        
     # 4. Lancer les tests unitaires
     - name: Run tests
       run: mvn test
