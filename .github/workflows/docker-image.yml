@@ -1,18 +1,43 @@
-name: Docker Image CI
+name: Build and Push Docker Image
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches:
+      - master # Déclenche la pipeline sur les push de la branche main
+  workflow_dispatch: # Permet de lancer manuellement le workflow si besoin
 
 jobs:
-
-  build:
-
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      # 1️⃣ Récupérer le code source
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Se connecter à Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3️⃣ Construire et pousser l'image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ruche-spring:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/ruche-spring:${{ github.sha }}
+
+      # (Optionnel) 4️⃣ Sauvegarde des couches Docker pour accélérer les builds
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
