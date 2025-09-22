@@ -14,6 +14,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Étape 1 : Installer Java et Maven pour build
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: |
+          mvn clean package -DskipTests
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
