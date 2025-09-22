@@ -11,17 +11,14 @@ RUN mvn clean test
 # Compiler le projet (mvn clean package)
 RUN mvn clean package -DskipTests
 
-# Étape 2 : Exécuter avec JDK léger
+# Étape unique : juste exécuter l'app avec JDK léger
 FROM eclipse-temurin:17-jdk-alpine
 
-# Dossier de travail
 WORKDIR /app
 
-# Copier le jar compilé depuis l’étape précédente
-COPY --from=builder /app/target/*.jar app.jar
+# Copier le jar compilé par Maven dans le job GitHub
+COPY target/*.jar app.jar
 
-# Exposer le port de l’application Spring Boot
 EXPOSE 8080
 
-# Commande de démarrage
 ENTRYPOINT ["java", "-jar", "app.jar"]
